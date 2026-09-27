@@ -38,11 +38,16 @@ app.whenReady().then(async () => {
     await fs.rm(profileDir, { recursive: true, force: true });
     await fs.mkdir(profileDir, { recursive: true });
 
-    // Step 1: Launch with no prior settings -> defaults to 1440x960
+    // Step 1: Launch with no prior settings -> defaults to 1440x960 (or clamped to display work area)
     const displays = screen.getAllDisplays();
+    const maxAreaWidth = displays.reduce((max, d) => Math.max(max, d.workArea?.width || d.bounds?.width || 0), 0);
+    const maxAreaHeight = displays.reduce((max, d) => Math.max(max, d.workArea?.height || d.bounds?.height || 0), 0);
+    const expectedDefaultWidth = (maxAreaWidth >= 1060 && 1440 > maxAreaWidth) ? maxAreaWidth : 1440;
+    const expectedDefaultHeight = (maxAreaHeight >= 720 && 960 > maxAreaHeight) ? maxAreaHeight : 960;
+
     let state1 = resolveWindowState(readSettings().windowState, displays);
-    assert.equal(state1.width, 1440);
-    assert.equal(state1.height, 960);
+    assert.equal(state1.width, expectedDefaultWidth);
+    assert.equal(state1.height, expectedDefaultHeight);
     assert.equal(state1.isMaximized, false);
 
     const win1 = new BrowserWindow({
@@ -63,7 +68,9 @@ app.whenReady().then(async () => {
     });
 
     // User manually resizes the window
-    win1.setBounds({ width: 1250, height: 820, x: 60, y: 70 });
+    const targetResizeWidth = maxAreaWidth >= 1250 ? 1250 : 1060;
+    const targetResizeHeight = maxAreaHeight >= 820 ? 820 : 720;
+    win1.setBounds({ width: targetResizeWidth, height: targetResizeHeight, x: 60, y: 70 });
     win1.emit('resize');
     win1.emit('move');
 
@@ -73,14 +80,14 @@ app.whenReady().then(async () => {
 
     const savedAfterStep1 = readSettings().windowState;
     assert.ok(savedAfterStep1, 'windowState should be saved');
-    assert.equal(savedAfterStep1.width, 1250);
-    assert.equal(savedAfterStep1.height, 820);
+    assert.equal(savedAfterStep1.width, targetResizeWidth);
+    assert.equal(savedAfterStep1.height, targetResizeHeight);
     assert.equal(savedAfterStep1.isMaximized, false);
 
-    // Step 2: Reopen window -> restores 1250x820, user maximizes it
+    // Step 2: Reopen window -> restores resized bounds, user maximizes it
     let state2 = resolveWindowState(readSettings().windowState, displays);
-    assert.equal(state2.width, 1250);
-    assert.equal(state2.height, 820);
+    assert.equal(state2.width, targetResizeWidth);
+    assert.equal(state2.height, targetResizeHeight);
     assert.equal(state2.isMaximized, false);
 
     const win2 = new BrowserWindow({
@@ -112,8 +119,8 @@ app.whenReady().then(async () => {
     assert.ok(savedAfterStep2, 'windowState should be saved');
     assert.equal(savedAfterStep2.isMaximized, true);
     // Unmaximized dimensions must be preserved
-    assert.equal(savedAfterStep2.width, 1250);
-    assert.equal(savedAfterStep2.height, 820);
+    assert.equal(savedAfterStep2.width, targetResizeWidth);
+    assert.equal(savedAfterStep2.height, targetResizeHeight);
 
     // Step 3: Reopen window -> auto opens in full size (maximized)
     let state3 = resolveWindowState(readSettings().windowState, displays);
@@ -152,8 +159,8 @@ app.whenReady().then(async () => {
 
     const savedAfterStep3 = readSettings().windowState;
     assert.equal(savedAfterStep3.isMaximized, false);
-    assert.equal(savedAfterStep3.width, 1250);
-    assert.equal(savedAfterStep3.height, 820);
+    assert.equal(savedAfterStep3.width, targetResizeWidth);
+    assert.equal(savedAfterStep3.height, targetResizeHeight);
 
     console.log('Window persistence integration test passed successfully!');
     app.exit(0);
