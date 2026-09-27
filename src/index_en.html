@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apex Telemetry</title><link rel="icon" type="image/png" href="assets/icon-32.png"><link rel="stylesheet" href="styles.css"></head><body><div class="shell">
+<aside class="sidebar"><div class="brand"><img class="brand-icon" src="assets/icon-64.png" alt="APEX Telemetry" width="32" height="32"><div><strong>APEX</strong><small>TELEMETRY</small></div></div><div class="side-label">WORKSPACE</div><button class="nav active" id="overviewNav"><span>◉</span> Overview</button><button class="nav" id="importNav"><span>↥</span> Import data</button><button type="button" id="donationOpen" class="donation-box"><span class="donation-box-kicker">SUPPORT PROJECT</span><strong>DONATE <b>↗</b></strong><small>Help fund ongoing development</small></button></aside>
+<main class="content"><header><div><p class="eyebrow" id="pageEyebrow">ANALYTICS / LIVE WORKSPACE</p><h1><span id="pageTitle">Ride overview</span> <span id="fileCount"></span></h1><p class="subtitle" id="sourceText">Select a folder to start the analysis.</p></div><div class="theme-switch" role="radiogroup" aria-label="Color theme"><button type="button" class="theme-btn" id="themeLight" data-theme-val="light" role="radio" aria-checked="false" aria-label="Light theme" title="Light theme"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></button><button type="button" class="theme-btn active" id="themeDark" data-theme-val="dark" role="radio" aria-checked="true" aria-label="Dark theme" title="Dark theme"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg></button></div></header>
+<div id="importScreen" class="hidden">
+<section class="folder-import" id="folderCard" data-configured="false" data-expanded="false" aria-label="CSV storage location">
+  <div class="folder-bar" id="folderBar" role="button" tabindex="0" aria-expanded="false" aria-controls="folderDetails">
+    <div class="folder-bar-left">
+      <div class="folder-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="folder-badge-dot" id="folderBadgeDot"></span>
+      </div>
+      <div class="folder-bar-info">
+        <div class="folder-bar-heading">
+          <span class="kicker folder-kicker">CSV STORAGE</span>
+          <span class="folder-status-tag tag-missing" id="folderStatusTag">Not configured</span>
+        </div>
+        <div class="folder-path-wrap" id="folderPathWrap" title="No folder selected yet">
+          <span class="folder-path" id="folderPath">No folder selected yet</span>
+        </div>
+      </div>
+    </div>
+    <div class="folder-bar-actions">
+      <button type="button" class="folder-action-btn primary" id="chooseBtn"><span>＋</span> Choose folder</button>
+      <button type="button" class="folder-toggle-btn" id="folderToggleBtn" aria-expanded="false" aria-controls="folderDetails" aria-label="Toggle storage location details" title="Toggle details">
+        <span class="folder-toggle-label" id="folderToggleLabel">Details</span>
+        <svg class="folder-chevron" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3.5 6l4.5 4.5 4.5-4.5"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="folder-drawer" id="folderDetails" aria-hidden="true">
+    <div class="folder-drawer-inner">
+      <div class="folder-drawer-grid">
+        <div class="folder-drawer-block">
+          <strong>Telemetry storage directory</strong>
+          <p>CSV files located in this directory are automatically parsed and displayed on your Overview dashboard. Direct USB sync copies completed sessions from your connected phone into this destination.</p>
+        </div>
+        <div class="folder-drawer-meta">
+          <div class="folder-meta-item">
+            <span class="folder-meta-label">STATUS</span>
+            <span class="folder-meta-val" id="folderMetaStatus">No folder selected</span>
+          </div>
+          <div class="folder-meta-item">
+            <span class="folder-meta-label">FULL PATH</span>
+            <code class="folder-meta-path" id="folderMetaPath">No folder selected yet</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div id="phoneSyncMount"></div></div>
+<div id="overviewScreen">
+<section class="dropzone hidden" id="dropzone"><div class="upload-icon">↥</div><div><strong>Import a telemetry folder</strong><p>Open <b>Import data</b> to choose a folder or sync your phone.</p></div></section>
+<section id="filters" class="filters hidden"><div class="filter-block"><label for="filterMode">VIEW</label><select id="filterMode"><option value="all">All sessions</option><option value="range">Date range</option><option value="session">Single session</option></select></div><div id="dateFields" class="filter-group hidden"><div class="filter-block"><label for="dateFrom">FROM</label><input id="dateFrom" type="date"></div><div class="filter-block"><label for="dateTo">TO</label><input id="dateTo" type="date"></div></div><div id="sessionFields" class="filter-block session-field hidden"><label for="sessionSelect">SESSION</label><select id="sessionSelect"></select></div><button type="button" id="applyFilter" class="filter-apply">Apply</button><span id="filterSummary" class="filter-summary"></span></section>
+<div id="dashboard" class="hidden"><div class="metrics" id="metrics"></div><div class="grid"><section class="panel wide"><div class="panel-head"><div><span class="kicker">PERFORMANCE</span><h2>Speed and power</h2></div><div class="legend"><span><i class="speed-dot"></i> Speed</span><span><i class="power-dot"></i> Motor</span></div></div><div class="chart-wrap" id="performanceChart"></div></section><section class="panel"><div class="panel-head"><div><span class="kicker">BATTERY</span><h2>Battery usage</h2></div></div><div id="batteryChart" class="donut-area"></div><div class="battery-note" id="batteryNote"></div></section><section class="panel wide"><div class="panel-head"><div><span class="kicker">THERMAL PROFILE</span><h2>Session temperatures</h2></div><span class="chip" id="tempChip"></span></div><div class="chart-wrap small" id="temperatureChart"></div></section><section class="panel"><div class="panel-head"><div><span class="kicker">ASSIST LEVEL</span><h2>Mode distribution</h2></div></div><div id="assistChart" class="bars"></div></section></div><section class="insights"><div class="insight-title"><span class="kicker">QUICK INSIGHTS</span><h2>Signals from your ride</h2></div><div id="insightCards" class="insight-cards"></div></section></div>
+<div id="emptyState" class="empty"><div class="empty-orb">◌</div><h2>Your cockpit is ready</h2><p>Import telemetry CSV files to explore performance, battery and temperature data.</p></div></div><div id="error" class="error hidden"></div></main></div>
+<div id="donationModal" class="donation-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="donationTitle"><div class="donation-dialog"><div class="donation-head"><h2 id="donationTitle">// SUPPORT PROJECT</h2><button type="button" id="donationX" aria-label="Close donation dialog">[✕]</button></div><p>Select a donation platform to support ongoing development and maintenance.</p><button type="button" id="donateKofi" class="donation-option kofi"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF5E5B" d="M2 5h15a1 1 0 0 1 1 1v5a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6V6a1 1 0 0 1 1-1z"/><path fill="#FF5E5B" d="M16 7h2a3 3 0 0 1 3 3 3 3 0 0 1-3 3h-2z"/><path fill="#fff" d="M9.5 8.8c-1-1.2-2.5-.7-2.8.5-.3 1.3 1.2 2.4 2.8 3.7 1.6-1.3 3.1-2.4 2.8-3.7-.3-1.2-1.8-1.7-2.8-.5z"/></svg><span><strong>KO-FI</strong><small>Support via Ko-fi tip / coffee</small></span><b>DONATE ↗</b></button><button type="button" id="donatePaypal" class="donation-option paypal"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#003087" d="M19.5 7.5c-.2-1.4-.9-2.5-2.1-3.3C16.2 3.4 14.5 3 12.2 3H5.6c-.4 0-.8.3-.8.7L2 21.3c0 .3.2.7.6.7h4.8l1.2-7.7h2.8c3.2 0 5.7-.7 7.1-2.2 1.3-1.4 1.7-3.3 1-4.6z"/><path fill="#0079C1" d="M20.9 9.3c-.2-1.4-.9-2.5-2.1-3.3-.6-.4-1.3-.7-2.1-.9-.5 1.7-1.6 2.9-3.4 3.7-1.1.5-2.4.7-3.9.7H7.3L6 18h4.1l.9-5.8h2.6c2.9 0 5.2-.6 6.5-2 1.2-1.3 1.5-3 .8-4.9z"/></svg><span><strong>PAYPAL</strong><small>Direct donation via PayPal (EUR)</small></span><b>DONATE ↗</b></button><button type="button" id="donationClose" class="donation-close">CLOSE</button></div></div>
+<script src="sync-ui.js"></script><script src="battery-usage.js"></script><script src="app.js"></script></body></html>

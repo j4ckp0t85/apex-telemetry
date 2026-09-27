@@ -1,0 +1,82 @@
+{
+  "name": "apex-telemetry",
+  "version": "1.0.0",
+  "description": "Offline ApexDrive telemetry dashboard with read-only USB phone sync",
+  "author": "Michele Granato",
+  "main": "main.js",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "prestart": "node scripts/build-wpd.js",
+    "test": "node --test test/*.test.js",
+    "test:ui": "node scripts/run-ui-smoke.js",
+    "build:wpd": "node scripts/build-wpd.js",
+    "start": "electron .",
+    "clean": "node scripts/clean.js",
+    "dist": "node scripts/build-wpd.js && node scripts/build-icons.js && electron-builder",
+    "dist:win": "node scripts/build-wpd.js && node scripts/build-icons.js && electron-builder --win nsis portable",
+    "dist:win:installer": "node scripts/build-wpd.js && node scripts/build-icons.js && electron-builder --win nsis",
+    "dist:win:portable": "node scripts/build-wpd.js && node scripts/build-icons.js && electron-builder --win portable",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage deb"
+  },
+  "devDependencies": {
+    "electron": "44.4.1",
+    "electron-builder": "26.15.3"
+  },
+  "allowScripts": {
+    "electron@44.4.1": true,
+    "electron-winstaller@5.4.0": true
+  },
+  "build": {
+    "appId": "com.apexdrive.telemetry",
+    "productName": "Apex Telemetry",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "!src/icon.png",
+      "!src/icon-32.png",
+      "!src/icon-64.png",
+      "!src/assets/icon.png",
+      "lib/**/*",
+      "assets/**/*",
+      "!assets/icon-source.*",
+      "package.json"
+    ],
+    "electronLanguages": ["en-US"],
+    "icon": "build/icon.png",
+    "win": {
+      "icon": "build/icon.ico",
+      "extraResources": [{ "from": "native/bin/WpdReader.exe", "to": "wpd/WpdReader.exe" }],
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "ApexTelemetry-Setup-${version}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "portable": {
+      "artifactName": "ApexTelemetry-Portable-${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
+  }
+}

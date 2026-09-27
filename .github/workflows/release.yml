@@ -1,0 +1,81 @@
+name: Release Build (Windows)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: false
+        default: ''
+        type: string
+      draft:
+        description: 'Create as draft release'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build & Package Windows Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name || github.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Validate release tag matches package version
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.tag_name != '')
+        env:
+          RELEASE_TAG: ${{ inputs.tag_name || github.ref_name }}
+        run: node -e "const p=require('./package.json'); const tag=process.env.RELEASE_TAG; if (tag !== 'v'+p.version) { console.error('Release tag '+tag+' does not match package version v'+p.version); process.exit(1); }"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run automated unit tests
+        run: npm test
+
+      - name: Run UI integration smoke test
+        run: npm run test:ui
+
+      - name: Build Windows release binaries (NSIS + Portable)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:win
+
+      - name: Upload build artifacts to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApexTelemetry-Windows-Binaries
+          path: |
+            release/*.exe
+            release/*.blockmap
+            release/*.yml
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.tag_name != '')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          files: |
+            release/*.exe
+            release/*.blockmap
+            release/*.yml
+          draft: ${{ inputs.draft || false }}
+          prerelease: false
+          generate_release_notes: true
