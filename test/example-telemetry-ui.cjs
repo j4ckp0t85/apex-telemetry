@@ -82,6 +82,8 @@ app.whenReady().then(async () => {
     assert.equal(await run("document.querySelector('#syncControls').disabled"), true);
     await run("focusSample('bundled-example:10')");
     assert.equal(await run('focusedSampleId'), 'bundled-example:10');
+    // The initially hidden dashboard draws through ResizeObserver after becoming visible.
+    await until("document.querySelector('#performanceChart').dataset.focusId === 'bundled-example:10'");
     assert.equal(await run("document.querySelector('#performanceChart').dataset.focusId"), 'bundled-example:10');
     await run('focusSample(null)');
     for (const theme of ['light', 'dark']) {
