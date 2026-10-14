@@ -4,6 +4,9 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const root = path.join(__dirname, '..');
+ipcMain.handle('get-example-enabled', () => false);
+ipcMain.handle('localization', () => ({ locale: 'en', dictionary: require('../src/locales/en.json'), english: require('../src/locales/en.json') }));
+ipcMain.handle('app-info', () => ({ version: require('../package.json').version }));
 app.setPath('userData', path.join(root, 'release', 'qa', 'smoke-profile'));
 setTimeout(() => { console.error('UI smoke timed out'); app.exit(1); }, 30000).unref();
 let config = { supported: true, telemetryFolder: 'C:\\Telemetry test folder', autoSync: false };
@@ -25,7 +28,7 @@ app.whenReady().then(async () => {
   const win = new BrowserWindow({ show: false, width: 1440, height: 1060,
     webPreferences: { preload: path.join(root, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false } });
   const errors = [];
-  win.webContents.on('console-message', (_, level, message) => { if (level >= 3) errors.push(message); });
+  win.webContents.on('console-message', details => { if (details.level === 'error') errors.push(details.message); });
   try {
     await win.loadFile(path.join(root, 'src', 'index_en.html'));
     await new Promise(resolve => setTimeout(resolve, 450));
@@ -129,6 +132,63 @@ app.whenReady().then(async () => {
       chart.dispatchEvent(new MouseEvent('mousemove', { clientX: rect.left + rect.width / 2, clientY: rect.top + 70 }));
     `);
     assert.match(await win.webContents.executeJavaScript("document.querySelector('#batteryDischargeChart .chart-tooltip').textContent"), /Reported charge: 98 %/);
+    // Axis glyphs retain their CSS size and proportions on laptop/2K windows,
+    // at application zoom, and after rendering while the overview is hidden.
+    const checkChartAxes = async () => {
+      for (let attempt = 0; attempt < 40; attempt++) {
+        const charts = await win.webContents.executeJavaScript(`
+          [...document.querySelectorAll('.chart-svg')].map(svg => {
+            const rect = svg.getBoundingClientRect(), box = svg.viewBox.baseVal;
+            const labels = [...svg.querySelectorAll('.axis')].map(label => {
+              const matrix = label.getScreenCTM(), bounds = label.getBoundingClientRect();
+              return { scaleX: matrix.a, scaleY: matrix.d, font: getComputedStyle(label).fontSize,
+                inside: bounds.left >= rect.left - 1 && bounds.right <= rect.right + 1 };
+            });
+            return { matches: Math.abs(rect.width - box.width) < 0.1 && Math.abs(rect.height - box.height) < 0.1, labels };
+          })
+        `);
+        if (charts.length === 3 && charts.every(chart => chart.matches)) {
+          for (const chart of charts) for (const label of chart.labels) {
+            assert.ok(Math.abs(label.scaleX - label.scaleY) < 0.001, 'axis text must scale uniformly');
+            assert.ok(Math.abs(label.scaleX - 1) < 0.001, 'axis text must retain its CSS size');
+            assert.equal(label.font, '11px');
+            assert.ok(label.inside, 'axis labels fit the chart');
+          }
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      assert.fail('Charts did not resize to their rendered dimensions');
+    };
+    for (const theme of ['light', 'dark']) {
+      await win.webContents.executeJavaScript(`document.querySelector('#theme${theme === 'light' ? 'Light' : 'Dark'}').click(); focusSample('0:1');`);
+      for (const [width, height, zoom] of [[1920, 1080, 1], [2560, 1440, 1], [1920, 1080, 1.25], [1060, 900, 1]]) {
+        win.setContentSize(width, height);
+        win.webContents.setZoomFactor(zoom);
+        let actualWidth;
+        for (let attempt = 0; attempt < 40; attempt++) {
+          actualWidth = await win.webContents.executeJavaScript('innerWidth');
+          if (Math.abs(actualWidth - width / zoom) < 1) break;
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        assert.ok(Math.abs(actualWidth - width / zoom) < 1, `expected ${width / zoom}px viewport, got ${actualWidth}px`);
+        await checkChartAxes();
+        assert.deepEqual(await win.webContents.executeJavaScript("[...document.querySelectorAll('.chart-wrap')].map(chart => chart.dataset.focusId)"), ['0:1', '0:1', '0:1']);
+        if (zoom === 1 && width >= 1920) {
+          await win.webContents.executeJavaScript("focusSample(null); document.querySelector('.grid').scrollIntoView({block: 'start'});");
+          await win.webContents.capturePage();
+          await new Promise(resolve => setTimeout(resolve, 150));
+          await fs.writeFile(path.join(root, 'release', 'qa', `chart-axes-${width}-${theme}.png`), (await win.webContents.capturePage()).toPNG());
+          await win.webContents.executeJavaScript("focusSample('0:1');");
+        }
+      }
+    }
+    await win.webContents.executeJavaScript("showPage('import'); applyFilter();");
+    win.setSize(1440, 1060);
+    await win.webContents.executeJavaScript("showPage('overview');");
+    await checkChartAxes();
+    assert.equal(await win.webContents.executeJavaScript('chartLayouts.size'), 3);
+    await win.webContents.executeJavaScript("document.querySelector('.content').scrollTop = 0;");
     for (const theme of ['light', 'dark']) {
       await win.webContents.executeJavaScript(`document.querySelector('#theme${theme === 'light' ? 'Light' : 'Dark'}').click()`);
       await win.webContents.capturePage();
@@ -146,8 +206,8 @@ app.whenReady().then(async () => {
     `);
     assert.equal(await win.webContents.executeJavaScript("!!document.querySelector('#batteryDischargeChart')"), false);
     assert.deepEqual(errors, []);
-    await fs.writeFile(path.join(root, 'release', 'qa', 'ui-smoke-result.json'), JSON.stringify({ passed: true, checked: ['phone selection', 'progress', 'disabled controls', 'summary', 'empty destination', 'battery totals above 100', 'battery exclusions', 'all/date/single filters', 'battery light/dark themes'] }));
-    console.log('UI smoke passed: sync, themes, battery totals, charging, missing readings, all/date/single filters.');
+    await fs.writeFile(path.join(root, 'release', 'qa', 'ui-smoke-result.json'), JSON.stringify({ passed: true, checked: ['phone selection', 'progress', 'disabled controls', 'summary', 'empty destination', 'battery totals above 100', 'battery exclusions', 'all/date/single filters', 'battery light/dark themes', 'undistorted chart axes at 1080p/2K/125% zoom', 'chart focus after resizing', 'hidden-page chart initialization'] }));
+    console.log('UI smoke passed: sync, themes, battery totals, charging, missing readings, all/date/single filters, chart axes at 1080p/2K/125% zoom and hidden-page resizing.');
     app.exit(0);
   } catch (error) { await fs.writeFile(path.join(root, 'release', 'qa', 'ui-smoke-result.json'), JSON.stringify({ passed: false, error: error.message })); console.error(error); app.exit(1); }
 });

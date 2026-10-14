@@ -46,11 +46,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run automated unit tests
+      - name: Run unit tests and validate localization dictionaries
         run: npm test
 
-      - name: Run UI integration smoke test
+      - name: Run UI integration tests (English and fallback)
         run: npm run test:ui
+
+      - name: Upload UI verification screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApexTelemetry-UI-Verification
+          path: release/qa/*.png
+          if-no-files-found: ignore
 
       - name: Build Windows release binaries (NSIS + Portable)
         env:

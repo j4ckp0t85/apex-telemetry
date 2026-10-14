@@ -5,6 +5,9 @@ const path = require('path');
 const { createTransport } = require('./lib/wpd-transport');
 const { sync } = require('./lib/sync-engine');
 const { resolveWindowState, trackWindowState } = require('./lib/window-state');
+const { configureMapNetwork } = require('./lib/map-network');
+const { systemLocalization, create: createLocalization } = require('./lib/localization');
+const { registerExampleTelemetry } = require('./lib/example-telemetry');
 let syncAbort = null;
 
 function settingsPath() { return path.join(app.getPath('userData'), 'settings.json'); }
@@ -36,6 +39,8 @@ function updateSettings(values) {
   return next;
 }
 
+registerExampleTelemetry(ipcMain, { root: __dirname, readSettings, updateSettings });
+
 let mainWindow;
 let windowTracker = null;
 async function createWindow() {
@@ -59,6 +64,11 @@ async function createWindow() {
   }
 
   const win = mainWindow = new BrowserWindow(windowOptions);
+  configureMapNetwork(win.webContents.session, app.getVersion());
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url === 'https://www.openstreetmap.org/copyright' || url === 'https://leafletjs.com/') shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   if (windowState.isMaximized) {
     win.maximize();
@@ -88,7 +98,8 @@ async function createWindow() {
 }
 
 ipcMain.handle('choose-folder', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, { title: 'Where should telemetry CSV files be stored on this computer?', properties: ['openDirectory', 'createDirectory'] });
+  const config = systemLocalization(app);
+  const result = await dialog.showOpenDialog(mainWindow, { title: createLocalization(config.locale, config.dictionary, config.english).t('TELEMETRY_FOLDER_DIALOG_TITLE'), properties: ['openDirectory', 'createDirectory'] });
   if (result.canceled) return null;
   return result.filePaths[0];
 });
@@ -151,6 +162,9 @@ ipcMain.handle('open-external', async (_, url) => {
   if (!allowed.has(url)) throw new Error('External URL is not allowed.');
   await shell.openExternal(url);
 });
+
+ipcMain.handle('app-info', () => ({ version: app.getVersion() }));
+ipcMain.handle('localization', () => systemLocalization(app));
 
 ipcMain.handle('read-telemetry-folder', async (_, folder) => {
   try {

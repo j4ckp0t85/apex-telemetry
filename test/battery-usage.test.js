@@ -1,7 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const vm = require('node:vm');
+const { parseCSV } = require('../src/telemetry-data');
 const { summarizeBatteryUsage, batteryDischargeRows } = require('../src/battery-usage');
 
 const session = (...values) => ({ rows: values.map(Battery_Pct => ({ Battery_Pct })) });
@@ -56,9 +55,7 @@ test('zero charge and unchanged readings are valid; decimal precision is preserv
 });
 
 test('CSV blanks stay missing instead of becoming a false zero battery level', () => {
-  const context = vm.createContext({ window: { addEventListener() {} } });
-  vm.runInContext(fs.readFileSync(require.resolve('../src/app.js'), 'utf8'), context);
-  const rows = context.parseCSV('Timestamp_ISO,Timestamp_UnixMs,Battery_Pct\n2026-09-27T10:00:00Z,1,90\n2026-09-27T10:00:01Z,2,');
+  const rows = parseCSV('Timestamp_ISO,Timestamp_UnixMs,Battery_Pct\n2026-09-27T10:00:00Z,1,90\n2026-09-27T10:00:01Z,2,');
   assert.equal(Number.isNaN(rows[1].Battery_Pct), true);
   assert.equal(summarizeBatteryUsage([{ rows }]).used, null);
 });

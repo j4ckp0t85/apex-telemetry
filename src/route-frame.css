@@ -1,0 +1,33 @@
+:root{color-scheme:light;--bg:#fff;--text:#17283b;--border:#becbd9;--map:#e9eff4;--muted:#475569;--card:#f1f5f9;--accent:#0756a6}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#111923;--text:#edf3f6;--border:#405267;--map:#1c2937;--muted:#a4b4c4;--card:#1a2634;--accent:#76b9ff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:12px "Segoe UI",Arial,sans-serif}
+.map-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.map-actions,.map-legend{display:flex;align-items:center;gap:12px}.map-actions label{display:flex;align-items:center;gap:5px}.map-actions button{font:600 12px inherit;border:1px solid var(--border);background:var(--bg);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer}.map-actions button:focus-visible{outline:2px solid #2686f4;outline-offset:2px}
+.route-key{width:22px;border-top:3px solid #1976e9}.route-key.estimated{border-top-style:dashed}
+.map-workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;flex:1;min-height:0}#map{min-height:120px;min-width:0;background:var(--map)}#tileStatus{padding:7px 12px;border-top:1px solid var(--border);font-size:11px}#mapFocus{padding:4px 12px 9px;min-height:30px;line-height:1.4}
+.sample-readout{padding:8px 12px;border-left:1px solid var(--border);min-width:0;overflow-y:auto;background:var(--bg)}.readout-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.readout-heading strong{font-size:14px}.readout-heading span{font-size:10px;color:var(--muted)}.readout-reference{min-height:30px;margin-top:4px;font-size:11px;line-height:1.5;color:var(--muted)}.readout-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin:6px 0}.readout-values>div{border-radius:6px;background:var(--card);padding:4px 8px;min-width:0}.readout-values dt{line-height:12px;color:var(--muted);font-size:10px;white-space:nowrap}.readout-values dd{margin:2px 0 0;line-height:20px;white-space:nowrap;font-variant-numeric:tabular-nums}.readout-values b{font-size:18px;font-weight:650}.readout-values span{font-size:10px;color:var(--muted)}#sampleSpeed,#sampleMotor{color:var(--accent)}.readout-gps{font-size:10px;color:var(--muted);line-height:1.4}.sample-readout[data-active="true"] .readout-heading span{color:var(--accent)}
+#mapFocus{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);padding:0;min-height:0}
+@media(max-width:700px){.map-workspace{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,1fr) auto}.sample-readout{border-left:0;border-top:1px solid var(--border);padding:9px 12px}.readout-values{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:7px 0}.readout-values b{font-size:16px}.readout-values>div{padding:6px}.readout-reference{min-height:0;margin-top:4px}.readout-gps{margin-top:4px}}
+.leaflet-control-attribution{color:#17283b!important;background:#fffffff0!important}.leaflet-control-attribution a{color:#064f9e!important}.leaflet-control-scale-line{background:#ffffffe6;color:#17283b}.leaflet-container{font-family:"Segoe UI",Arial,sans-serif}
+/* Darken only the basemap tiles; route lines and sample markers keep their colors. */
+:root[data-theme="dark"] .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.85) saturate(.6)}
+:root[data-theme="dark"] .leaflet-bar{border-color:var(--border)}
+:root[data-theme="dark"] .leaflet-bar a{background:var(--bg);color:var(--text);border-color:var(--border)}
+:root[data-theme="dark"] .leaflet-bar a:hover,:root[data-theme="dark"] .leaflet-bar a:focus{background:var(--card)}
+:root[data-theme="dark"] .leaflet-bar a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+:root[data-theme="dark"] .leaflet-bar a.leaflet-disabled{background:var(--bg);color:var(--muted);opacity:.55}
+:root[data-theme="dark"] .leaflet-control-attribution{background:var(--bg)!important;color:var(--text)!important}
+:root[data-theme="dark"] .leaflet-control-attribution a{color:var(--accent)!important}
+:root[data-theme="dark"] .leaflet-control-scale-line{background:var(--bg);color:var(--text);border-color:var(--muted);text-shadow:none}
+:fullscreen{background:var(--bg)}
+.readout-heading strong{min-width:0;flex:1;white-space:nowrap}.readout-heading span{flex-shrink:0;white-space:nowrap}
+/* Keep geographic controls and value/unit order independent of text direction. */
+.map-workspace,#map,.readout-values dd{direction:ltr;unicode-bidi:isolate}
+[dir="rtl"] .sample-readout{direction:rtl}
+[dir="rtl"] .readout-values dd{text-align:right}
+.readout-values dt{line-height:1.4}
+.readout-values>div{padding-block:3px}
+/* One geometry for every language, with room for complete labels in complex scripts. */
+.map-workspace{grid-template-columns:minmax(0,1fr) 320px}
+.readout-values dt{line-height:14px}
+@media(max-width:700px){.map-workspace{grid-template-columns:minmax(0,1fr)}.readout-values{grid-template-columns:repeat(4,minmax(0,1fr))}}

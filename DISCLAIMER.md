@@ -39,6 +39,7 @@ TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE AUTHOR,
 * **Read-Only USB Operations**: APEX TELEMETRY's phone synchronization module is designed to interact with mobile devices via the Windows Portable Devices (WPD) API in a **read-only** manner. While the application never issues delete, overwrite, or modification commands to connected phones, users remain responsible for backing up their files and safely disconnecting devices.
 * **Third-Party Drivers & Cables**: Stability and performance during USB operations depend on host operating system drivers (MTP/WPD drivers), USB cables, and phone firmware. The developers accept zero responsibility for any device disconnects, driver crashes, or communication failures during transfer.
 * **Firmware & Telemetry Logs**: The telemetry data visualized by this application originates from external companion apps (such as APEX DRIVE) and third-party motor hardware/firmware. The developers are not liable for inaccurate hardware readings, sensor drift, or miscalibrated configuration values.
+* **GPS Route Display**: The map connects recorded positions and may estimate short missing stretches. Straight connections do not establish the actual trail, passability or terrain safety. Longer gaps are left disconnected. This post-ride viewer is not a navigation or mountain-safety service. Online map background availability depends on the tile provider.
 
 ---
 

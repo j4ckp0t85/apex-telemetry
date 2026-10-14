@@ -53,6 +53,34 @@ test('retains a conflicting existing CSV without replacing it', async () => {
   assert.equal(await fs.readFile(path.join(folder, item.info.fileName), 'utf8'), 'existing data');
 });
 
+test('GPS CSVs with recorded, null and empty coordinates sync alongside legacy CSVs', async () => {
+  const items = [fixture(), ...['46.1,11.2', 'null,null', ',', '46.1,null'].map(gps => {
+    const item = fixture();
+    item.data = Buffer.from(HEADER + ',GPS_Latitude,GPS_Longitude\n' + row.trimEnd() + ',' + gps + '\n');
+    item.info.size = item.data.length;
+    item.info.sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
+    return item;
+  })];
+  const folder = await destination();
+  const result = await sync({ ...phone(items), folder });
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.added, items.length);
+  for (const item of items) assert.equal(await hash(path.join(folder, item.info.fileName)), item.info.sha256);
+  assert.equal((await sync({ ...phone(items), folder })).present, items.length);
+});
+
+test('GPS sync rejects corrupt coordinate tokens and mismatched column counts', async () => {
+  for (const gps of ['NaN,11', '91,11', '46,181', '46']) {
+    const item = fixture();
+    item.data = Buffer.from(HEADER + ',GPS_Latitude,GPS_Longitude\n' + row.trimEnd() + ',' + gps + '\n');
+    item.info.size = item.data.length;
+    item.info.sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
+    const result = await sync({ ...phone([item]), folder: await destination() });
+    assert.equal(result.added, 0);
+    assert.equal(result.errors.length, 1);
+  }
+});
+
 test('interrupted USB transfer leaves no final CSV and a later retry succeeds', async () => {
   const item = fixture(); const context = phone([item]); const folder = await destination();
   context.transport.read = async (_, entry, sink) => {

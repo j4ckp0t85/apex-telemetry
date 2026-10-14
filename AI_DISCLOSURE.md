@@ -18,11 +18,12 @@ In accordance with ethical software engineering principles and EU transparency g
 
 ## 2. In-App Data Processing & Algorithmic Classification
 
-APEX TELEMETRY is an offline desktop analysis and synchronization suite for electric bicycle telemetry data. For legal, regulatory, and technical clarity:
+APEX TELEMETRY is a desktop analysis and synchronization suite for electric bicycle telemetry data. Analysis runs locally; the optional map background uses online tiles. For legal, regulatory, and technical clarity:
 
 * **Deterministic Processing & Analytics**: The application relies strictly on **deterministic algorithms, numerical aggregation, mathematical statistical parsing, and rule-based data heuristics** (evaluating CSV telemetry columns such as speed, motor power, bio-mechanical rider effort, battery voltage/percentage, cadence RPM, and motor/controller temperatures).
 * **No Black-Box Deep Learning**: The desktop runtime application does **not** execute black-box deep neural networks, generative AI models, biometric categorization, emotion recognition, profiling algorithms, or social scoring mechanisms.
 * **Deterministic USB Synchronization**: The direct USB synchronization mechanism interacts with mobile devices via the Windows Portable Devices (WPD) API using strictly deterministic file enumeration and byte-copy streaming logic without automated AI decision systems.
+* **GPS Gap Estimates**: Short missing-coordinate gaps may be interpolated using explicit duration, distance and sample-count thresholds. These estimates are labeled in the map, do not alter the source CSV and do not infer the actual trail or use an AI routing model.
 
 ---
 
