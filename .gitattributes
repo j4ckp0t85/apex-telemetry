@@ -1,0 +1,2 @@
+# Preserve bundled recordings byte-for-byte, including their original line endings.
+assets/example/*.csv -text
