@@ -59,7 +59,8 @@
     // Recognize the original English diagnostic text from values, independently of IDs.
     // Formatting fragments are inserted by templates, never emitted as backend diagnostics.
     const templateFragments = new Set(['BATTERY_INCLUDED_SESSIONS', 'BATTERY_CHARGE_INCREASE_EXCLUSION',
-      'BATTERY_INVALID_READINGS_EXCLUSION', 'BATTERY_CHARGE_VALUE', 'BATTERY_RANGE_VALUE', 'PHONE_FILE_TRANSFER_MODE']);
+      'BATTERY_INVALID_READINGS_EXCLUSION', 'BATTERY_CHARGE_VALUE', 'BATTERY_RANGE_VALUE', 'PHONE_FILE_TRANSFER_MODE',
+      'DURATION_HOURS_MINUTES', 'DURATION_HOURS_MINUTES_SECONDS']);
     const sources = Object.entries(english).filter(([key]) => !templateFragments.has(key)).map(([key, entry]) =>
       ({ key, source: typeof entry === 'string' ? entry : entry?.other }))
       .filter(({ source }) => typeof source === 'string');

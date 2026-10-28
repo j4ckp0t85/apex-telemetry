@@ -77,6 +77,7 @@
   "REPORTED_CHARGE": "Gemeldeter Ladestand",
   "BATTERY_VOLTAGE": "Akkuspannung",
   "DISTANCE": "Distanz",
+  "RIDE_TIME": "Fahrzeit",
   "ASSIST_LEVEL": "Unterstützungsstufe",
   "RECORDED_TELEMETRY_VALUES": "Aufgezeichnete Telemetriewerte",
   "MAP_BACKGROUND_DESCRIPTION": "Der Kartenhintergrund verwendet Online-Kacheln von OpenStreetMap.",
@@ -180,6 +181,8 @@
     "one": "{count} ausgewählt · {distance} km · {duration} min",
     "other": "{count} ausgewählt · {distance} km · {duration} min"
   },
+  "DURATION_HOURS_MINUTES": "{hours} h {minutes} min",
+  "DURATION_HOURS_MINUTES_SECONDS": "{hours} h {minutes} min {seconds} s",
   "REPORTED_CHARGE_OVER_TIME": "Gemeldeter Ladestand im Zeitverlauf",
   "BATTERY_CHARGE_TIME_ACCESSIBILITY_DESCRIPTION": "Akkuladestand in Prozent über die verstrichene Sitzungszeit",
   "BATTERY_CHARGE_DROP_SUMMARY": "Summe der Ladestandsabnahmen in den berücksichtigten Sitzungen: {sessions}.",

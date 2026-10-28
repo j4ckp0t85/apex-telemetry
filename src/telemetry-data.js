@@ -63,7 +63,50 @@
     return lo > 0 && minutes - rows[lo - 1].Chart_Min <= rows[lo].Chart_Min - minutes ? rows[lo - 1] : rows[lo];
   }
 
-  const api = { coordinate, parseCSV, buildSession, prepareChartRows, nearestSample };
+  function sessionDuration(session) {
+    if (!session || !session.first || !session.last) return 0;
+    const elapsedFirst = Number(session.first.Elapsed_Sec);
+    const elapsedLast = Number(session.last.Elapsed_Sec);
+    if (Number.isFinite(elapsedFirst) && Number.isFinite(elapsedLast) && elapsedLast >= elapsedFirst) {
+      return (elapsedLast - elapsedFirst) / 60;
+    }
+    const msFirst = Number(session.first.Timestamp_UnixMs);
+    const msLast = Number(session.last.Timestamp_UnixMs);
+    if (Number.isFinite(msFirst) && Number.isFinite(msLast) && msLast >= msFirst) {
+      return (msLast - msFirst) / 60000;
+    }
+    return 0;
+  }
+
+  function durationHoursMinutes(totalMinutes) {
+    const safeMinutes = Math.max(0, Math.round(Number(totalMinutes) || 0));
+    const hours = Math.floor(safeMinutes / 60);
+    const minutes = safeMinutes % 60;
+    return { hours, minutes };
+  }
+
+  function durationHoursMinutesSeconds(totalMinutes) {
+    const totalSeconds = Math.max(0, Math.round((Number(totalMinutes) || 0) * 60));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return { hours, minutes, seconds };
+  }
+
+  function sortSessionsDescending(sessions) {
+    if (!Array.isArray(sessions)) return [];
+    return [...sessions].sort((a, b) => {
+      const timeA = a && a.first ? Number(a.first.Timestamp_UnixMs) || 0 : 0;
+      const timeB = b && b.first ? Number(b.first.Timestamp_UnixMs) || 0 : 0;
+      if (timeB !== timeA) return timeB - timeA;
+      const endA = a && a.last ? Number(a.last.Timestamp_UnixMs) || 0 : 0;
+      const endB = b && b.last ? Number(b.last.Timestamp_UnixMs) || 0 : 0;
+      if (endB !== endA) return endB - endA;
+      return String(b?.name || '').localeCompare(String(a?.name || ''));
+    });
+  }
+
+  const api = { coordinate, parseCSV, buildSession, prepareChartRows, nearestSample, sessionDuration, durationHoursMinutes, durationHoursMinutesSeconds, sortSessionsDescending, sortSessionsReverseChronological: sortSessionsDescending };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TelemetryData = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

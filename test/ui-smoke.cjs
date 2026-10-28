@@ -71,6 +71,21 @@ app.whenReady().then(async () => {
       applyFilter();
       showPage('overview');
     `);
+    const metricCount = await win.webContents.executeJavaScript("document.querySelectorAll('#metrics .metric').length");
+    assert.equal(metricCount, 5, 'Dashboard must have exactly 5 metric cards');
+    const dropdownValues = await win.webContents.executeJavaScript("Array.from(document.querySelectorAll('#sessionSelect option')).map(el => el.value)");
+    assert.deepEqual(dropdownValues, ['3', '2', '1', '0'], 'Single session dropdown options must be in reverse chronological order (most recent first)');
+    const cardTops = await win.webContents.executeJavaScript("Array.from(document.querySelectorAll('#metrics .metric')).map(el => Math.round(el.getBoundingClientRect().top))");
+    assert.equal(new Set(cardTops).size, 1, 'All metric cards must be on a single row');
+    const cardLabels = await win.webContents.executeJavaScript("Array.from(document.querySelectorAll('#metrics .metric-label')).map(el => el.textContent.trim())");
+    assert.equal(cardLabels[0], 'Distance');
+    assert.equal(cardLabels[1], 'Ride time');
+    assert.equal(cardLabels[2], 'Top speed');
+    assert.equal(cardLabels[3], 'Motor peak');
+    assert.equal(cardLabels[4], 'Battery used');
+    const allRideTimeCard = await win.webContents.executeJavaScript("document.querySelectorAll('#metrics .metric')[1].textContent");
+    assert.match(allRideTimeCard, /Ride time/);
+    assert.match(allRideTimeCard, /aggregated total/);
     const batteryText = () => win.webContents.executeJavaScript("document.querySelector('#batteryChart').textContent + ' ' + document.querySelector('#batteryNote').textContent");
     assert.match(await batteryText(), /170 pp/);
     assert.equal(await win.webContents.executeJavaScript("!!document.querySelector('#batteryDischargeChart')"), false);
@@ -97,6 +112,10 @@ app.whenReady().then(async () => {
     `);
     assert.match(await batteryText(), /90 pp/);
     assert.match(await batteryText(), /1 of 2 sessions/);
+    const rangeRideTime = await win.webContents.executeJavaScript("document.querySelectorAll('#metrics .metric-value')[1].textContent");
+    assert.match(rangeRideTime, /\d+\s*h\s*\d+\s*min\s*\d{2}\s*s/);
+    const rangeCardTops = await win.webContents.executeJavaScript("Array.from(document.querySelectorAll('#metrics .metric')).map(el => Math.round(el.getBoundingClientRect().top))");
+    assert.equal(new Set(rangeCardTops).size, 1, 'Range metric cards must stay on a single row');
     await win.webContents.executeJavaScript(`
       document.querySelector('#filterMode').value = 'session';
       document.querySelector('#sessionSelect').value = '2';
@@ -110,6 +129,10 @@ app.whenReady().then(async () => {
     `);
     assert.match(await batteryText(), /80 pp/);
     assert.match(await batteryText(), /Last reported charge 20%/);
+    const sessionRideTime = await win.webContents.executeJavaScript("document.querySelectorAll('#metrics .metric-value')[1].textContent");
+    assert.match(sessionRideTime, /\d+\s*h\s*\d+\s*min\s*\d{2}\s*s/);
+    const sessionCardTops = await win.webContents.executeJavaScript("Array.from(document.querySelectorAll('#metrics .metric')).map(el => Math.round(el.getBoundingClientRect().top))");
+    assert.equal(new Set(sessionCardTops).size, 1, 'Single session metric cards must stay on a single row');
     assert.equal(await win.webContents.executeJavaScript("!!document.querySelector('#batteryDischargeChart svg')"), true);
     assert.match(await win.webContents.executeJavaScript("document.querySelector('#batteryDischargeChart').textContent"), /100%/);
     // Use uneven timestamps and a threshold-sized decline to check time spacing,

@@ -132,6 +132,7 @@ app.whenReady().then(async () => {
     await run('setExampleEnabled(true)');
     assert.equal(await run('telemetrySessions.length'), 2);
     assert.equal(await run("document.querySelectorAll('#sessionSelect option').length"), 2);
+    assert.deepEqual(await run("Array.from(document.querySelectorAll('#sessionSelect option')).map(opt => opt.value)"), ['1', '0']);
     await run('setExampleEnabled(false)');
     assert.equal(await run("document.querySelector('#filterMode').value"), 'range');
     assert.equal(await run("document.querySelector('#dateFrom').value"), '2026-10-03');

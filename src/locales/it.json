@@ -77,6 +77,7 @@
   "REPORTED_CHARGE": "Carica riportata",
   "BATTERY_VOLTAGE": "Tensione batteria",
   "DISTANCE": "Distanza",
+  "RIDE_TIME": "Tempo di percorrenza",
   "ASSIST_LEVEL": "Livello assistenza",
   "RECORDED_TELEMETRY_VALUES": "Valori di telemetria registrati",
   "MAP_BACKGROUND_DESCRIPTION": "Lo sfondo della mappa utilizza riquadri online di OpenStreetMap.",
@@ -180,6 +181,8 @@
     "one": "{count} selezionata · {distance} km · {duration} min",
     "other": "{count} selezionate · {distance} km · {duration} min"
   },
+  "DURATION_HOURS_MINUTES": "{hours} h {minutes} min",
+  "DURATION_HOURS_MINUTES_SECONDS": "{hours} h {minutes} min {seconds} s",
   "REPORTED_CHARGE_OVER_TIME": "Carica riportata nel tempo",
   "BATTERY_CHARGE_TIME_ACCESSIBILITY_DESCRIPTION": "Percentuale di carica della batteria nel tempo trascorso della sessione",
   "BATTERY_CHARGE_DROP_SUMMARY": "Somma dei cali di carica nelle sessioni incluse: {sessions}.",

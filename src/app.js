@@ -21,7 +21,7 @@ function showPage(page) {
   $('#sourceText').textContent = importing ? i18n.t("CHOOSE_IMPORT_SOURCE_INSTRUCTION") : overviewSubtitle;
 }
 
-const { parseCSV, buildSession, prepareChartRows, nearestSample } = TelemetryData;
+const { parseCSV, buildSession, prepareChartRows, nearestSample, sessionDuration, durationHoursMinutes, durationHoursMinutesSeconds, sortSessionsDescending } = TelemetryData;
 let chartViews = [];
 const chartLayouts = new Map();
 const chartResizeObserver = new ResizeObserver(entries => {
@@ -129,9 +129,6 @@ function sessionDistance(session) {
   return values.length ? Math.max(0, Math.max(...values) - Math.min(...values)) : 0;
 }
 
-function sessionDuration(session) {
-  return Math.max(0, ((session.last.Elapsed_Sec || 0) - (session.first.Elapsed_Sec || 0)) / 60);
-}
 
 function renderDashboard(sessions) {
   const viewingExample = $('#filterMode').value === 'example';
@@ -148,6 +145,12 @@ function renderDashboard(sessions) {
   const first = sessions[0].first, last = sessions[sessions.length - 1].last;
   const totalDistance = sessions.reduce((sum, session) => sum + sessionDistance(session), 0);
   const totalDuration = sessions.reduce((sum, session) => sum + sessionDuration(session), 0);
+  const durationParts = durationHoursMinutesSeconds(totalDuration);
+  const formattedDuration = i18n.t("DURATION_HOURS_MINUTES_SECONDS", {
+    hours: fmt(durationParts.hours, 0),
+    minutes: fmt(durationParts.minutes, 0),
+    seconds: String(durationParts.seconds).padStart(2, '0')
+  });
   const battery = summarizeBatteryUsage(sessions);
   const batteryStatus = battery.included === 0 ? i18n.t("UNAVAILABLE") : battery.included < battery.total ? i18n.t("PARTIAL_ESTIMATE") : i18n.t("ESTIMATED_FROM_REPORTED_CHARGE");
   const maximumSpeed = data.reduce((maximum, row) => Math.max(maximum, row.Speed_kmh || 0), 0);
@@ -158,10 +161,11 @@ function renderDashboard(sessions) {
   $('#filterSummary').textContent = i18n.t("FILTER_SELECTION_SUMMARY", { count: sessions.length, distance: fmt(totalDistance, 1), duration: fmt(totalDuration, 0) });
   $('#metrics').innerHTML = [
     [i18n.t("DISTANCE"), fmt(totalDistance, 1), 'km', i18n.t("AGGREGATED_TOTAL")],
+    [i18n.t("RIDE_TIME"), formattedDuration, '', i18n.t("AGGREGATED_TOTAL")],
     [i18n.t("TOP_SPEED"), fmt(maximumSpeed, 1), 'km/h', i18n.t("ACROSS_SELECTION")],
     [i18n.t("MOTOR_PEAK"), fmt(maximumMotor, 0), 'W', i18n.t("ACROSS_SELECTION")],
     [i18n.t("BATTERY_USED"), fmt(battery.used, 1), 'pp', batteryStatus]
-  ].map(item => `<div class="metric"><div class="metric-label">${item[0]}</div><div class="metric-value">${item[1]} <span class="metric-unit">${item[2]}</span></div><div class="metric-trend">↗ ${item[3]}</div></div>`).join('');
+  ].map(item => `<div class="metric"><div class="metric-label">${item[0]}</div><div class="metric-value">${item[1]}${item[2] ? ` <span class="metric-unit">${item[2]}</span>` : ''}</div><div class="metric-trend">↗ ${item[3]}</div></div>`).join('');
   createLineChart($('#performanceChart'), data, [{ key: 'Speed_kmh', label: i18n.t("SPEED"), unit: 'km/h', className: 'line-speed' }, { key: 'Motor_Watts', label: i18n.t("MOTOR"), unit: 'W', className: 'line-power' }], true);
   createLineChart($('#temperatureChart'), data, [{ key: 'Motor_Temp_C', label: i18n.t("MOTOR_TEMP"), unit: '°C', className: 'line-temp' }, { key: 'Controller_Temp_C', label: i18n.t("CONTROLLER_TEMP"), unit: '°C', className: 'line-power' }]);
   $('#batteryChart').innerHTML = `<div class="battery-total"><strong>${fmt(battery.used, 1)} <span>pp</span></strong><span>${batteryStatus}</span></div>`;
@@ -245,7 +249,8 @@ function configureFilters(preserveRange = false) {
   $('#dateFrom').min = dates[0] || ''; $('#dateFrom').max = dates[dates.length - 1] || ''; $('#dateFrom').value = from;
   $('#dateTo').min = dates[0] || ''; $('#dateTo').max = dates[dates.length - 1] || ''; $('#dateTo').value = to;
   const selectedSession = $('#sessionSelect').value;
-  $('#sessionSelect').replaceChildren(...telemetrySessions.map(session => new Option(session.label, session.id)));
+  const dropdownSessions = sortSessionsDescending(telemetrySessions);
+  $('#sessionSelect').replaceChildren(...dropdownSessions.map(session => new Option(session.label, session.id)));
   if (telemetrySessions.some(session => session.id === selectedSession)) $('#sessionSelect').value = selectedSession;
   for (const option of $('#filterMode').options) {
     option.disabled = option.value === 'example' ? !exampleEnabled : !telemetrySessions.length;
