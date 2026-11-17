@@ -200,7 +200,15 @@ app.whenReady().then(async () => {
     for (const theme of ['light', 'dark']) {
       await win.webContents.executeJavaScript(`document.querySelector('#theme${theme === 'light' ? 'Light' : 'Dark'}').click(); focusSample('0:1');`);
       for (const [width, height, zoom] of [[1920, 1080, 1], [2560, 1440, 1], [1920, 1080, 1.25], [1060, 900, 1]]) {
+        const previousZoom = win.webContents.getZoomFactor();
         win.setContentSize(width, height);
+        let resizedWidth;
+        for (let attempt = 0; attempt < 40; attempt++) {
+          resizedWidth = await win.webContents.executeJavaScript('innerWidth');
+          if (Math.abs(resizedWidth - width / previousZoom) < 1) break;
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        assert.ok(Math.abs(resizedWidth - width / previousZoom) < 1, `expected resized ${width / previousZoom}px viewport, got ${resizedWidth}px`);
         win.webContents.setZoomFactor(zoom);
         let actualWidth;
         for (let attempt = 0; attempt < 40; attempt++) {
