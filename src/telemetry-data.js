@@ -15,7 +15,8 @@
       const row = {};
       headers.forEach((header, index) => {
         const raw = (cells[index] || '').trim();
-        row[header] = header === 'Timestamp_ISO' ? raw : raw === '' ? NaN : Number(raw);
+        row[header] = header === 'Timestamp_ISO' || header === 'Motor_Power_Source'
+          ? raw : raw === '' ? NaN : Number(raw);
       });
       // Parse from the original cells: Number('') and Number(null) would invent 0° fixes.
       const lat = coordinate(cells[headers.indexOf('GPS_Latitude')], 90);

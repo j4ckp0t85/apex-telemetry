@@ -4,6 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const root = path.join(__dirname, '..');
+const { HEADER } = require('../lib/sync-engine');
 ipcMain.handle('get-example-enabled', () => false);
 ipcMain.handle('localization', () => ({ locale: 'en', dictionary: require('../src/locales/en.json'), english: require('../src/locales/en.json') }));
 ipcMain.handle('app-info', () => ({ version: require('../package.json').version }));
@@ -14,7 +15,8 @@ ipcMain.handle('sync-config', () => config);
 ipcMain.handle('get-saved-folder', () => config.telemetryFolder);
 ipcMain.handle('get-theme', () => 'dark');
 ipcMain.handle('save-theme', () => {});
-ipcMain.handle('read-telemetry-folder', () => ({ files: [] }));
+let folderFiles = [];
+ipcMain.handle('read-telemetry-folder', () => ({ files: folderFiles }));
 ipcMain.handle('save-folder', () => {});
 ipcMain.handle('sync-devices', () => [{ id: 'test', name: 'Test Android phone' }]);
 ipcMain.handle('sync-auto', (_, value) => { config.autoSync = value; });
@@ -53,6 +55,18 @@ app.whenReady().then(async () => {
     await new Promise(resolve => setTimeout(resolve, 1600));
     assert.match(await win.webContents.executeJavaScript("document.querySelector('#syncStatus').textContent"), /5 added, 3 already present/);
     assert.equal(await win.webContents.executeJavaScript("document.querySelector('#chooseBtn').disabled"), false);
+    const sample = '2026-11-11T16:21:23Z,1794414083000,1.0,12.0,7.5,251,100,70,35,31,54,48.00,5.23,15.00,40.0,0.010,2,1';
+    folderFiles = [
+      { name: 'legacy.csv', content: HEADER + '\n' + sample + '\n' },
+      { name: 'gps.csv', content: HEADER + ',GPS_Latitude,GPS_Longitude\n' + sample + ',46.1,11.2\n' },
+      { name: 'power.csv', content: HEADER + ',GPS_Latitude,GPS_Longitude,Motor_Power_Source,Motor_Power_Age_ms\n' + sample + ',null,null,controller_electrical,0\n' }
+    ];
+    await win.webContents.executeJavaScript("loadFolder('C:\\\\Telemetry test folder')");
+    assert.deepEqual(await win.webContents.executeJavaScript("telemetrySessions.map(session => session.name)"), ['legacy.csv', 'gps.csv', 'power.csv']);
+    assert.equal(await win.webContents.executeJavaScript("telemetrySessions[2].rows[0].Motor_Power_Source"), 'controller_electrical');
+    assert.equal(await win.webContents.executeJavaScript("telemetrySessions[2].rows[0].Motor_Watts"), 251);
+    assert.match(await win.webContents.executeJavaScript("document.querySelector('#metrics').textContent"), /251\s*W/);
+    assert.equal(await win.webContents.executeJavaScript("document.querySelector('#dashboard').classList.contains('hidden')"), false);
     // Exercise the real CSV parser, filters and renderer with recharging between
     // files, ambiguous charging inside a file, and a total greater than 100 pp.
     await win.webContents.executeJavaScript(`

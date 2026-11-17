@@ -42,7 +42,7 @@ If you enjoy the app and want to support ongoing development, optimizations, and
 ### 📊 Comprehensive Telemetry Analytics
 Turn raw ride recordings into clear, actionable insights:
 * **Interactive Dual Charts**: Synchronized crosshairs and inspectable data points for Speed vs. Motor Power and thermal behavior.
-* **Dual Power Metrics**: Compare electrical motor output directly against human bio-mechanical pedaling effort.
+* **Dual Power Metrics**: Compare recorded motor and rider power values. Their provenance depends on the recording; rider power is an estimate, and controller electrical battery power is not mechanical motor output.
 * **Battery Consumption**: Compare charge drops across selected sessions, reported in percentage points (pp). Sessions with charging or invalid battery readings are excluded and identified; the total can exceed 100 pp.
 * **Single-Session Discharge Chart**: In a single-session view, inspect reported battery charge (%) over time when the session shows at least a 5 pp drop and has valid, uninterrupted readings.
 * **Thermal Dynamics**: Monitor motor and controller operating temperatures throughout entire sessions.
@@ -56,11 +56,13 @@ The route map and sample slider are available only in **Single session** view. *
 * **Shared Sample Focus**: Hover any time-series chart or near the blue route to inspect the same original CSV sample across the map, speed/power, temperatures and eligible battery-discharge chart. The matching assist level is highlighted. Hovering an assist-distribution bar selects its first matching sample unless the current sample already belongs to that level; a distribution bar is an aggregate, not a unique time sample.
 * **Visible Sample Details**: A compact readout beside the map shows the sample's speed, motor/rider power, cadence, motor/controller temperatures, reported battery charge, voltage, distance and assist level. It works in fullscreen and keeps the last inspected values visible after the pointer leaves the route. Missing readings appear as `—`; estimated or unavailable GPS positions are labeled. On narrow windows the readout moves below the map.
 * **Precise Selection**: The sample slider also supports arrow keys and reaches every original row, including stationary or overlapping GPS fixes and rows omitted from chart downsampling. Map hover at overlapping fixes prefers the occurrence closest to the current focus.
-* **Legacy CSV Support**: `GPS_Latitude` and `GPS_Longitude` are optional. Old 18-column files, current 20-column files, and sessions with no GPS still import and retain their telemetry charts. The map explains when valid coordinates are unavailable.
+* **CSV Compatibility**: Legacy 18-column files, 20-column files with GPS, and 22-column files with GPS and motor power provenance import together and retain their telemetry charts. The map explains when valid coordinates are unavailable.
 * **Conservative Off-Road Gaps**: Up to 10 missing samples are connected only when endpoints are within 15 seconds and 60 metres and movement is plausible. These straight-line estimates appear as dashed blue connections; focus labels identify estimated positions. Longer outages, implausible jumps and different sessions remain separate. Leading/trailing gaps are never extrapolated. This does not reconstruct the exact trail or snap rides to roads.
 * **Offline Route Inspection**: Turn off **Online background** to keep inspecting local GPS geometry without tile requests. Missing or blocked tiles also leave the route and sample controls usable. The switch is retained for the current app window and defaults to enabled on the next launch; tiles are requested only when the selection has GPS.
 
-Coordinate pairs containing empty cells, literal `null`, non-numeric/non-finite values or values outside latitude ±90° / longitude ±180° are treated as missing during folder import. A pair requires both values; valid zero coordinates are retained. USB sync accepts both supported headers, valid coordinates and null/empty GPS cells, while rejecting corrupt numeric coordinates and incorrect column counts before publication.
+Coordinate pairs containing empty cells, literal `null`, non-numeric/non-finite values or values outside latitude ±90° / longitude ±180° are treated as missing during folder import. A pair requires both values; valid zero coordinates are retained. USB sync accepts all three supported headers, valid coordinates and null/empty GPS cells, while rejecting corrupt numeric coordinates and incorrect column counts before publication.
+
+New 22-column recordings preserve `Motor_Power_Source` (`estimated`, `controller_electrical` or `unavailable`) and `Motor_Power_Age_ms`. The dashboard currently charts the recorded numeric `Motor_Watts` without a provenance indicator: an `unavailable` sample may therefore appear as 0 W even though it is not a measured zero. Inspect the CSV source column when interpreting power. Older recordings without these fields retain their original values; their power source cannot be inferred from the CSV alone.
 
 ### 📱 Read-Only USB Phone Sync (No ADB Required)
 * **Direct MTP / WPD Integration**: Discover and transfer ride CSV files directly from your connected Android phone via standard USB file transfer.
@@ -116,7 +118,7 @@ The example is the original recording `telemetry_session_20261010T121124177Z_d69
 4. In Apex Telemetry, navigate to **Import data**, click **Find phone**, and then select **Sync CSV files**.
 
 ### Troubleshooting USB Connectivity
-* **Device shows a yellow exclamation mark in Device Manager**:  
+* **Device shows a yellow exclamation mark in Device Manager**:
   Right-click device $\rightarrow$ **Update driver** $\rightarrow$ **Browse my computer for drivers** $\rightarrow$ **Let me pick from a list of available drivers** $\rightarrow$ **Portable Devices** $\rightarrow$ select **MTP USB Device**.
 * **Device disconnects or doesn't appear**: Verify you are using a high-quality USB data cable and a direct USB port (avoid unpowered USB hubs).
 

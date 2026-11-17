@@ -16,6 +16,22 @@ test('legacy GPS-free CSVs keep every telemetry row and mark coordinates missing
   assert.equal(rows[0].GPS_Longitude, null);
 });
 
+test('power provenance remains text while age and power remain numeric', () => {
+  const header = 'Timestamp_ISO,Timestamp_UnixMs,Motor_Watts,GPS_Latitude,GPS_Longitude,Motor_Power_Source,Motor_Power_Age_ms';
+  const rows = parseCSV(header + '\n' +
+    '2026-01-01T00:00:00Z,1,251,46.1,11.2,controller_electrical,0\n' +
+    '2026-01-01T00:00:01Z,2,0,null,null,unavailable,3001\n' +
+    '2026-01-01T00:00:02Z,3,150,null,null,estimated,-1');
+  assert.deepEqual(rows.map(row => row.Motor_Power_Source), ['controller_electrical', 'unavailable', 'estimated']);
+  assert.deepEqual(rows.map(row => row.Motor_Power_Age_ms), [0, 3001, -1]);
+  assert.deepEqual(rows.map(row => row.Motor_Watts), [251, 0, 150]);
+  assert.equal(rows[0].GPS_Latitude, 46.1);
+  assert.equal(rows[1].GPS_Latitude, null);
+  const legacy = parseCSV('Timestamp_ISO,Timestamp_UnixMs,Motor_Watts\n2026-01-01T00:00:00Z,1,42')[0];
+  assert.equal(legacy.Motor_Watts, 42);
+  assert.equal(legacy.Motor_Power_Source, undefined);
+});
+
 test('blank, null, partial, nonfinite and out-of-range pairs are missing; zero is valid', () => {
   for (const [lat, lng] of [['', ''], ['null', 'NULL'], ['45', ''], ['null', '13'], ['NaN', '13'], ['Infinity', '13'], ['91', '13'], ['45', '-181']]) {
     const row = session([[0, lat, lng]]).rows[0];

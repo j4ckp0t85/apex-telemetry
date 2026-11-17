@@ -81,6 +81,41 @@ test('GPS sync rejects corrupt coordinate tokens and mismatched column counts', 
   }
 });
 
+test('power provenance CSVs sync alongside legacy and GPS recordings', async () => {
+  const items = [fixture(), ...['estimated,-1', 'controller_electrical,0', 'unavailable,3001'].map(power => {
+    const item = fixture();
+    item.data = Buffer.from(HEADER + ',GPS_Latitude,GPS_Longitude,Motor_Power_Source,Motor_Power_Age_ms\n' + row.trimEnd() + ',null,null,' + power + '\n');
+    item.info.size = item.data.length;
+    item.info.sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
+    return item;
+  })];
+  const gps = fixture();
+  gps.data = Buffer.from(HEADER + ',GPS_Latitude,GPS_Longitude\n' + row.trimEnd() + ',46.1,11.2\n');
+  gps.info.size = gps.data.length;
+  gps.info.sha256 = crypto.createHash('sha256').update(gps.data).digest('hex');
+  items.push(gps);
+  const folder = await destination();
+  const result = await sync({ ...phone(items), folder });
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.added, items.length);
+  for (const item of items) assert.equal(await hash(path.join(folder, item.info.fileName)), item.info.sha256);
+  assert.equal((await sync({ ...phone(items), folder })).present, items.length);
+});
+
+test('power provenance CSVs reject invalid GPS, source, age and column counts', async () => {
+  for (const suffix of ['91,11,estimated,-1', '46,181,estimated,-1', '46,11,unknown,0',
+    '46,11,estimated,NaN', '46,11,estimated,-2', '46,11,estimated,1.5', '46,11,estimated',
+    '46,11,estimated,0,extra']) {
+    const item = fixture();
+    item.data = Buffer.from(HEADER + ',GPS_Latitude,GPS_Longitude,Motor_Power_Source,Motor_Power_Age_ms\n' + row.trimEnd() + ',' + suffix + '\n');
+    item.info.size = item.data.length;
+    item.info.sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
+    const result = await sync({ ...phone([item]), folder: await destination() });
+    assert.equal(result.added, 0, suffix);
+    assert.equal(result.errors.length, 1, suffix);
+  }
+});
+
 test('interrupted USB transfer leaves no final CSV and a later retry succeeds', async () => {
   const item = fixture(); const context = phone([item]); const folder = await destination();
   context.transport.read = async (_, entry, sink) => {
