@@ -9,7 +9,7 @@ ipcMain.handle('get-example-enabled', () => false);
 ipcMain.handle('localization', () => ({ locale: 'en', dictionary: require('../src/locales/en.json'), english: require('../src/locales/en.json') }));
 ipcMain.handle('app-info', () => ({ version: require('../package.json').version }));
 app.setPath('userData', path.join(root, 'release', 'qa', 'smoke-profile'));
-setTimeout(() => { console.error('UI smoke timed out'); app.exit(1); }, 30000).unref();
+setTimeout(() => { console.error('UI smoke timed out'); app.exit(1); }, 60000).unref();
 let config = { supported: true, telemetryFolder: 'C:\\Telemetry test folder', autoSync: false };
 ipcMain.handle('sync-config', () => config);
 ipcMain.handle('get-saved-folder', () => config.telemetryFolder);
@@ -172,7 +172,7 @@ app.whenReady().then(async () => {
     // Axis glyphs retain their CSS size and proportions on laptop/2K windows,
     // at application zoom, and after rendering while the overview is hidden.
     const checkChartAxes = async () => {
-      for (let attempt = 0; attempt < 40; attempt++) {
+      for (let attempt = 0; attempt < 160; attempt++) {
         const charts = await win.webContents.executeJavaScript(`
           [...document.querySelectorAll('.chart-svg')].map(svg => {
             const rect = svg.getBoundingClientRect(), box = svg.viewBox.baseVal;
@@ -197,26 +197,27 @@ app.whenReady().then(async () => {
       }
       assert.fail('Charts did not resize to their rendered dimensions');
     };
+    // Hidden Electron windows can defer layout/zoom commits until invalidated or captured.
+    const waitForViewportWidth = async (expectedWidth, label) => {
+      let actualWidth;
+      for (let attempt = 0; attempt < 160; attempt++) {
+        actualWidth = await win.webContents.executeJavaScript('innerWidth');
+        if (Math.abs(actualWidth - expectedWidth) < 1) return;
+        if (attempt === 5) win.webContents.invalidate();
+        if (attempt === 20 || attempt === 60) await win.webContents.capturePage();
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      assert.ok(Math.abs(actualWidth - expectedWidth) < 1, `expected ${label} ${expectedWidth}px viewport, got ${actualWidth}px`);
+    };
     for (const theme of ['light', 'dark']) {
       await win.webContents.executeJavaScript(`document.querySelector('#theme${theme === 'light' ? 'Light' : 'Dark'}').click(); focusSample('0:1');`);
       for (const [width, height, zoom] of [[1920, 1080, 1], [2560, 1440, 1], [1920, 1080, 1.25], [1060, 900, 1]]) {
         const previousZoom = win.webContents.getZoomFactor();
         win.setContentSize(width, height);
-        let resizedWidth;
-        for (let attempt = 0; attempt < 40; attempt++) {
-          resizedWidth = await win.webContents.executeJavaScript('innerWidth');
-          if (Math.abs(resizedWidth - width / previousZoom) < 1) break;
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-        assert.ok(Math.abs(resizedWidth - width / previousZoom) < 1, `expected resized ${width / previousZoom}px viewport, got ${resizedWidth}px`);
+        await waitForViewportWidth(width / previousZoom, 'resized');
         win.webContents.setZoomFactor(zoom);
-        let actualWidth;
-        for (let attempt = 0; attempt < 40; attempt++) {
-          actualWidth = await win.webContents.executeJavaScript('innerWidth');
-          if (Math.abs(actualWidth - width / zoom) < 1) break;
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-        assert.ok(Math.abs(actualWidth - width / zoom) < 1, `expected ${width / zoom}px viewport, got ${actualWidth}px`);
+        win.webContents.invalidate();
+        await waitForViewportWidth(width / zoom, 'zoomed');
         await checkChartAxes();
         assert.deepEqual(await win.webContents.executeJavaScript("[...document.querySelectorAll('.chart-wrap')].map(chart => chart.dataset.focusId)"), ['0:1', '0:1', '0:1']);
         if (zoom === 1 && width >= 1920) {

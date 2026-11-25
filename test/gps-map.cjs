@@ -93,7 +93,7 @@ app.whenReady().then(async () => {
     const zoom = await frameRun('map.getZoom()');
     const arrowsBeforeZoom = await frameRun('routeArrows.getLayers().length');
     await frameRun("document.querySelector('.leaflet-control-zoom-in').click()");
-    await until(() => frameRun(`map.getZoom() === ${zoom + 1} && !map._animatingZoom`));
+    await until(() => frameRun(`map.getZoom() === ${zoom + 1} && !map._animatingZoom && projectedZoom === ${zoom + 1}`));
     assert.ok(await frameRun(`routeArrows.getLayers().length >= ${arrowsBeforeZoom}`));
     const center = await frameRun('map.getCenter().lng');
     await frameRun('map.panBy([80, 0], { animate: false }); void 0');
@@ -103,7 +103,7 @@ app.whenReady().then(async () => {
     assert.equal(await frameRun("document.querySelector('#showArrows').checked"), false);
     assert.equal(await frameRun('routeArrows.getLayers().length'), 0);
     await frameRun("document.querySelector('.leaflet-control-zoom-out').click()");
-    await until(() => frameRun(`map.getZoom() === ${zoom} && !map._animatingZoom`));
+    await until(() => frameRun(`map.getZoom() === ${zoom} && !map._animatingZoom && projectedZoom === ${zoom}`));
     assert.equal(await frameRun('routeArrows.getLayers().length'), 0);
     await frameRun("document.querySelector('#showArrows').click()");
     assert.equal(await frameRun("document.querySelector('#showArrows').checked"), true);
