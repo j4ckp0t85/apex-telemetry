@@ -61,9 +61,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Build Windows release binaries (NSIS + Portable)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run dist:win
+        run: npm run dist:win -- --publish never
 
       - name: Upload build artifacts to GitHub Actions
         uses: actions/upload-artifact@v4
