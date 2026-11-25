@@ -10,7 +10,7 @@ const routes = L.layerGroup().addTo(map);
 const routeArrows = L.layerGroup().addTo(map);
 const focusMarker = L.circleMarker([0, 0], { radius: 7, color: '#ffffff', weight: 3, fillColor: '#086bea', fillOpacity: 1, interactive: false });
 let generation = 0, model = null, samples = new Map(), projected = [], focused = null, pendingPointer = null, pointerFrame = 0;
-let suppressViewEvents = false, projectedZoom = null, lastArrowZoom = null, lastArrowBounds = null;
+let suppressViewEvents = false, pendingFit = false, projectedZoom = null, lastArrowZoom = null, lastArrowBounds = null;
 let tileErrors = 0;
 let inspectedId = null;
 const status = document.querySelector('#tileStatus');
@@ -48,7 +48,11 @@ function displaySegments() {
 
 function fitRoute() {
   const points = displaySegments().flat().map(point => [point.lat, point.displayLng]);
-  if (points.length) map.fitBounds(L.latLngBounds(points), { padding: [30, 30], maxZoom: 17, animate: false });
+  if (!points.length) { pendingFit = false; return; }
+  const size = map.getSize();
+  if (size.x <= 0 || size.y <= 0) { pendingFit = true; return; }
+  pendingFit = false;
+  map.fitBounds(L.latLngBounds(points), { padding: [30, 30], maxZoom: 17, animate: false });
 }
 
 function projectRoute() {
@@ -229,6 +233,11 @@ new ResizeObserver(() => {
   resizeFrame = requestAnimationFrame(() => {
     resizeFrame = null;
     map.invalidateSize();
+    if (pendingFit && map.getSize().x > 0 && map.getSize().y > 0) {
+      suppressViewEvents = true;
+      try { fitRoute(); } finally { suppressViewEvents = false; }
+      projectRoute();
+    }
     fitReadoutHeading();
   });
 }).observe(document.querySelector('#map'));

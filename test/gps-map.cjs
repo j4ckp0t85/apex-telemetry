@@ -51,7 +51,7 @@ app.whenReady().then(async () => {
         }).join('\\n') }, 0)];
       configureFilters(); document.querySelector('#filterMode').value = 'session'; applyFilter();
     `);
-    await until(() => frameRun('model?.total === 900 && map.getSize().y > 200'));
+    await until(() => frameRun('model?.total === 900 && map.getSize().y > 200 && !pendingFit'));
     assert.equal(await frameRun('typeof window.telemetryAPI'), 'undefined');
     assert.equal(await frameRun('model.estimated'), 4);
     assert.equal(await frameRun('model.segments.length'), 2);
@@ -170,7 +170,7 @@ app.whenReady().then(async () => {
     assert.equal(await run('selectedRows.size'), 900);
     assert.equal(await run("document.querySelector('#routePanel').classList.contains('hidden')"), true);
     await run("document.querySelector('#filterMode').value='session'; document.querySelector('#sessionSelect').value='0'; document.querySelector('#filterMode').dispatchEvent(new Event('change'))");
-    await until(() => frameRun('model?.total === 900 && map.getSize().y > 200'));
+    await until(() => frameRun('model?.total === 900 && map.getSize().y > 200 && !pendingFit'));
     assert.equal(await run("document.querySelector('#routePanel').classList.contains('hidden')"), false);
     // Switching to date-range mode hides the map before Apply is pressed.
     await run("document.querySelector('#filterMode').value='range'; document.querySelector('#filterMode').dispatchEvent(new Event('change'))");
