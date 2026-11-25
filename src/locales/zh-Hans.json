@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "示例遥测",
   "SHOW_EXAMPLE_TELEMETRY": "显示示例遥测",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "无需选择文件夹即可查看内置骑行。示例数据与您的骑行记录分开保存。",
-  "EXAMPLE_TELEMETRY_NOTICE": "您正在查看示例骑行。它不计入您的个人骑行记录总计。"
+  "EXAMPLE_TELEMETRY_NOTICE": "您正在查看示例骑行。它不计入您的个人骑行记录总计。",
+  "DIRECTION_ARROWS": "方向箭头"
 }

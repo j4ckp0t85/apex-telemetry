@@ -2,6 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { parseCSV, buildSession, prepareChartRows, nearestSample } = require('../src/telemetry-data');
 const { buildRouteModel, distanceMeters } = require('../src/gps-route');
+const { projectSegmentPoints, pointAtDistance, computeRouteArrows } = require('../src/route-arrows');
 
 function session(fixes, id = 0) {
   return buildSession({ name: `synthetic-${id}.csv`, content:
@@ -118,4 +119,32 @@ test('large recordings build without variadic argument overflow', () => {
   const ride = { id: 'large', rows: Array.from({ length: 150000 }, (_, i) => ({ Sample_Id: `large:${i}`, Sample_Index: i,
     Timestamp_UnixMs: i * 1000, GPS_Latitude: null, GPS_Longitude: null })) };
   assert.equal(buildRouteModel([ride]).total, 150000);
+});
+
+test('direction arrows place spaced oriented chevrons, skip stationary/short paths, and respect viewport and out-and-back overlap', () => {
+  const stationary = projectSegmentPoints([{ x: 10, y: 10 }, { x: 10, y: 10 }], p => p);
+  const tiny = projectSegmentPoints([{ x: 0, y: 0 }, { x: 20, y: 0 }], p => p);
+  assert.equal(computeRouteArrows([stationary, tiny]).length, 0);
+
+  const straight = projectSegmentPoints([{ x: 0, y: 50 }, { x: 0, y: 50 }, { x: 240, y: 50 }], p => p);
+  assert.deepEqual(pointAtDistance(straight, 120), { x: 120, y: 50 });
+  const straightArrows = computeRouteArrows([straight]);
+  assert.equal(straightArrows.length, 3);
+  assert.deepEqual(straightArrows.map(a => Math.round(a.x)), [40, 120, 200]);
+  for (const arrow of straightArrows) {
+    assert.ok(Math.abs(arrow.ux - 1) < 1e-6 && Math.abs(arrow.uy) < 1e-6);
+    assert.equal(arrow.vertices.length, 4);
+    assert.ok(arrow.vertices[0].x > arrow.vertices[1].x);
+  }
+
+  const culled = computeRouteArrows([straight], { min: { x: 100, y: 0 }, max: { x: 150, y: 100 } });
+  assert.deepEqual(culled.map(a => Math.round(a.x)), [120]);
+
+  const outbound = projectSegmentPoints([{ x: 0, y: 0 }, { x: 80, y: 0 }], p => p);
+  const sameDirection = projectSegmentPoints([{ x: 0, y: 2 }, { x: 80, y: 2 }], p => p);
+  const returnDirection = projectSegmentPoints([{ x: 80, y: 0 }, { x: 0, y: 0 }], p => p);
+  assert.equal(computeRouteArrows([outbound, sameDirection]).length, 1);
+  const outAndBack = computeRouteArrows([outbound, returnDirection]);
+  assert.equal(outAndBack.length, 2);
+  assert.ok(outAndBack[0].ux > 0.99 && outAndBack[1].ux < -0.99);
 });

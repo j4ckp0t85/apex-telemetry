@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "Telemetri contoh",
   "SHOW_EXAMPLE_TELEMETRY": "Tampilkan telemetri contoh",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Jelajahi perjalanan yang disertakan tanpa memilih folder. Data contoh disimpan terpisah dari sesi Anda.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Anda sedang melihat perjalanan contoh. Perjalanan ini tidak termasuk dalam total sesi pribadi Anda."
+  "EXAMPLE_TELEMETRY_NOTICE": "Anda sedang melihat perjalanan contoh. Perjalanan ini tidak termasuk dalam total sesi pribadi Anda.",
+  "DIRECTION_ARROWS": "Panah arah"
 }

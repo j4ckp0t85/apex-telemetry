@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "የምሳሌ ቴሌሜትሪ",
   "SHOW_EXAMPLE_TELEMETRY": "የምሳሌ ቴሌሜትሪን አሳይ",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "አቃፊ ሳይመርጡ የተካተተውን ጉዞ ይመልከቱ። የምሳሌ ውሂብ ከእርስዎ ክፍለ ጊዜዎች ተለይቶ ይቀመጣል።",
-  "EXAMPLE_TELEMETRY_NOTICE": "የምሳሌ ጉዞውን እየተመለከቱ ነው። በግል ክፍለ ጊዜዎችዎ ድምር ውስጥ አይካተትም።"
+  "EXAMPLE_TELEMETRY_NOTICE": "የምሳሌ ጉዞውን እየተመለከቱ ነው። በግል ክፍለ ጊዜዎችዎ ድምር ውስጥ አይካተትም።",
+  "DIRECTION_ARROWS": "የአቅጣጫ ቀስቶች"
 }

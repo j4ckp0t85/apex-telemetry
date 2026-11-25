@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "範例遙測",
   "SHOW_EXAMPLE_TELEMETRY": "顯示範例遙測",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "無需選擇資料夾即可查看內建騎乘。範例資料與您的騎乘紀錄分開保存。",
-  "EXAMPLE_TELEMETRY_NOTICE": "您正在查看範例騎乘。它不計入您的個人騎乘紀錄總計。"
+  "EXAMPLE_TELEMETRY_NOTICE": "您正在查看範例騎乘。它不計入您的個人騎乘紀錄總計。",
+  "DIRECTION_ARROWS": "方向箭頭"
 }

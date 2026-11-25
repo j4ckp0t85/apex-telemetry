@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "Halimbawang telemetry",
   "SHOW_EXAMPLE_TELEMETRY": "Ipakita ang halimbawang telemetry",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Tuklasin ang kasamang biyahe nang hindi pumipili ng folder. Nakahiwalay ang halimbawang data sa iyong mga session.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Tinitingnan mo ang halimbawang biyahe. Hindi ito kasama sa mga kabuuan ng iyong mga personal na session."
+  "EXAMPLE_TELEMETRY_NOTICE": "Tinitingnan mo ang halimbawang biyahe. Hindi ito kasama sa mga kabuuan ng iyong mga personal na session.",
+  "DIRECTION_ARROWS": "Mga arrow ng direksyon"
 }

@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "テレメトリーの例",
   "SHOW_EXAMPLE_TELEMETRY": "テレメトリーの例を表示",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "フォルダーを選択せずに、付属の走行データを確認できます。サンプルデータは個人のセッションとは別に扱われます。",
-  "EXAMPLE_TELEMETRY_NOTICE": "サンプルの走行を表示しています。個人のセッションの合計には含まれません。"
+  "EXAMPLE_TELEMETRY_NOTICE": "サンプルの走行を表示しています。個人のセッションの合計には含まれません。",
+  "DIRECTION_ARROWS": "進行方向の矢印"
 }

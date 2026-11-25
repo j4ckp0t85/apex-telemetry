@@ -263,5 +263,6 @@
   "EXAMPLE_TELEMETRY": "Telemetria de exemplo",
   "SHOW_EXAMPLE_TELEMETRY": "Mostrar telemetria de exemplo",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Explore o percurso incluído sem escolher uma pasta. Os dados de exemplo ficam separados das suas sessões.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Você está visualizando o percurso de exemplo. Ele não entra nos totais das suas sessões pessoais."
+  "EXAMPLE_TELEMETRY_NOTICE": "Você está visualizando o percurso de exemplo. Ele não entra nos totais das suas sessões pessoais.",
+  "DIRECTION_ARROWS": "Setas de direção"
 }

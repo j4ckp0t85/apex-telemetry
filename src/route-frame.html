@@ -11,7 +11,7 @@
 <body>
   <div class="map-toolbar">
     <div class="map-legend"><span class="route-key"></span> <span data-i18n="RECORDED">Recorded</span> <span class="route-key estimated"></span> <span data-i18n="ESTIMATED_GAP">Estimated gap</span></div>
-    <div class="map-actions"><label><input id="onlineTiles" type="checkbox" checked> <span data-i18n="ONLINE_BACKGROUND">Online background</span></label><button id="fitRoute" type="button" data-i18n="FIT_ROUTE">Fit route</button><button id="fullscreen" type="button" data-i18n="FULL_SCREEN">Full screen</button></div>
+    <div class="map-actions"><label><input id="showArrows" type="checkbox" checked> <span data-i18n="DIRECTION_ARROWS">Direction arrows</span></label><label><input id="onlineTiles" type="checkbox" checked> <span data-i18n="ONLINE_BACKGROUND">Online background</span></label><button id="fitRoute" type="button" data-i18n="FIT_ROUTE">Fit route</button><button id="fullscreen" type="button" data-i18n="FULL_SCREEN">Full screen</button></div>
   </div>
   <div class="map-workspace">
     <div id="map" aria-label="Ride map. Drag to pan, use plus and minus to zoom, or use arrow keys." data-i18n-aria-label="RIDE_MAP_ACCESSIBILITY_DESCRIPTION" tabindex="0"></div>
@@ -36,6 +36,6 @@
   <div id="tileStatus" role="status" data-i18n="MAP_BACKGROUND_DESCRIPTION">Map background uses OpenStreetMap online tiles.</div>
   <div id="mapFocus" data-i18n="HOVER_BLUE_ROUTE_INSTRUCTION">Hover the blue route to inspect a sample.</div>
   <script src="vendor/leaflet/leaflet.js"></script>
-  <script src="i18n.js"></script><script src="route-frame.js"></script>
+  <script src="i18n.js"></script><script src="route-arrows.js"></script><script src="route-frame.js"></script>
 </body>
 </html>

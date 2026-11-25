@@ -263,5 +263,6 @@
   "EXAMPLE_TELEMETRY": "Telemetria di esempio",
   "SHOW_EXAMPLE_TELEMETRY": "Mostra telemetria di esempio",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Esplora il giro incluso senza scegliere una cartella. I dati di esempio restano separati dalle tue sessioni.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Stai visualizzando il giro di esempio. È escluso dai totali delle tue sessioni personali."
+  "EXAMPLE_TELEMETRY_NOTICE": "Stai visualizzando il giro di esempio. È escluso dai totali delle tue sessioni personali.",
+  "DIRECTION_ARROWS": "Frecce di direzione"
 }

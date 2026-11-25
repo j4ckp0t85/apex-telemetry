@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "예제 텔레메트리",
   "SHOW_EXAMPLE_TELEMETRY": "예제 텔레메트리 표시",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "폴더를 선택하지 않고 포함된 주행을 살펴보세요. 예제 데이터는 개인 세션과 별도로 유지됩니다.",
-  "EXAMPLE_TELEMETRY_NOTICE": "예제 주행을 보고 있습니다. 개인 세션 합계에는 포함되지 않습니다."
+  "EXAMPLE_TELEMETRY_NOTICE": "예제 주행을 보고 있습니다. 개인 세션 합계에는 포함되지 않습니다.",
+  "DIRECTION_ARROWS": "방향 화살표"
 }

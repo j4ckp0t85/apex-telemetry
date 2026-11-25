@@ -263,5 +263,6 @@
   "EXAMPLE_TELEMETRY": "Telemetría de ejemplo",
   "SHOW_EXAMPLE_TELEMETRY": "Mostrar telemetría de ejemplo",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Explora el recorrido incluido sin elegir una carpeta. Los datos de ejemplo se mantienen separados de tus sesiones.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Estás viendo el recorrido de ejemplo. Se excluye de los totales de tus sesiones personales."
+  "EXAMPLE_TELEMETRY_NOTICE": "Estás viendo el recorrido de ejemplo. Se excluye de los totales de tus sesiones personales.",
+  "DIRECTION_ARROWS": "Flechas de dirección"
 }

@@ -1,4 +1,4 @@
-/* global L */
+/* global L, RouteArrows */
 let i18n = ApexI18n.create('en');
 const map = L.map('map', { minZoom: 1, maxZoom: 19, zoomControl: true, worldCopyJump: false, preferCanvas: true }).setView([0, 0], 2);
 L.control.scale({ imperial: false }).addTo(map);
@@ -7,11 +7,14 @@ const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
 });
 const routes = L.layerGroup().addTo(map);
+const routeArrows = L.layerGroup().addTo(map);
 const focusMarker = L.circleMarker([0, 0], { radius: 7, color: '#ffffff', weight: 3, fillColor: '#086bea', fillOpacity: 1, interactive: false });
 let generation = 0, model = null, samples = new Map(), projected = [], focused = null, pendingPointer = null, pointerFrame = 0;
+let suppressViewEvents = false, projectedZoom = null, lastArrowZoom = null, lastArrowBounds = null;
 let tileErrors = 0;
 let inspectedId = null;
 const status = document.querySelector('#tileStatus');
+const showArrows = document.querySelector('#showArrows');
 const online = document.querySelector('#onlineTiles');
 const send = message => parent.postMessage({ channel: 'apex-route', generation, ...message }, '*');
 
@@ -27,6 +30,7 @@ function updateTiles() {
 tiles.on('tileerror', () => { tileErrors++; updateTiles(); });
 tiles.on('loading', () => { tileErrors = 0; });
 tiles.on('load', updateTiles);
+showArrows.addEventListener('change', () => { lastArrowBounds = null; drawArrows(); });
 online.addEventListener('change', updateTiles);
 
 // Unwrap longitudes so an antimeridian crossing stays a short local segment.
@@ -48,12 +52,42 @@ function fitRoute() {
 }
 
 function projectRoute() {
-  projected = displaySegments().map(segment => segment.map(point => ({ ...point,
-    pixel: map.project([point.lat, point.displayLng]) })));
+  projectedZoom = map.getZoom();
+  projected = displaySegments().map(segment =>
+    RouteArrows.projectSegmentPoints(segment, point => map.project([point.lat, point.displayLng])));
+  lastArrowBounds = null;
+  drawArrows();
+}
+
+function drawArrows() {
+  if (!showArrows.checked || !projected.length) {
+    routeArrows.clearLayers(); lastArrowBounds = null;
+    if (map.hasLayer(focusMarker)) focusMarker.bringToFront();
+    return;
+  }
+  const zoom = map.getZoom();
+  const viewport = map.getPixelBounds();
+  if (lastArrowZoom === zoom && lastArrowBounds && lastArrowBounds.contains(viewport)) return;
+  const size = map.getSize();
+  const pad = Math.max(size.x, size.y, 120);
+  const drawBounds = L.bounds([viewport.min.x - pad, viewport.min.y - pad], [viewport.max.x + pad, viewport.max.y + pad]);
+  routeArrows.clearLayers();
+  lastArrowZoom = zoom;
+  lastArrowBounds = drawBounds;
+  for (const arrow of RouteArrows.computeRouteArrows(projected, drawBounds)) {
+    L.polygon(arrow.vertices.map(vertex => map.unproject([vertex.x, vertex.y])), {
+      color: '#ffffff', weight: 1.75, opacity: 1,
+      fillColor: '#1976e9', fillOpacity: 1, lineJoin: 'round', interactive: false
+    }).addTo(routeArrows);
+  }
+  if (map.hasLayer(focusMarker)) focusMarker.bringToFront();
 }
 
 function drawRoute() {
   routes.clearLayers();
+  routeArrows.clearLayers();
+  projected = [];
+  lastArrowBounds = null;
   for (const segment of displaySegments()) {
     if (segment.every(point => point.lat === segment[0].lat && point.displayLng === segment[0].displayLng)) {
       L.circleMarker([segment[0].lat, segment[0].displayLng], { radius: 4, color: '#1976e9', fillOpacity: 1, interactive: false }).addTo(routes);
@@ -70,7 +104,10 @@ function drawRoute() {
     }
     draw();
   }
-  fitRoute(); projectRoute(); updateTiles();
+  suppressViewEvents = true;
+  try { fitRoute(); } finally { suppressViewEvents = false; }
+  projectRoute();
+  updateTiles();
 }
 
 const readoutFields = [
@@ -132,7 +169,7 @@ function showFocus(message) {
   document.body.dataset.focusKind = focused?.kind || '';
   if (!focused || focused.kind === 'missing') { focusMarker.remove(); return; }
   const lng = focused.lng + 360 * Math.round((map.getCenter().lng - focused.lng) / 360);
-  focusMarker.setLatLng([focused.lat, lng]).setStyle({ fillColor: focused.kind === 'estimated' ? '#ffffff' : '#086bea', color: '#086bea' }).addTo(map);
+  focusMarker.setLatLng([focused.lat, lng]).setStyle({ fillColor: focused.kind === 'estimated' ? '#ffffff' : '#086bea', color: '#086bea' }).addTo(map).bringToFront();
   if (message.source !== 'map' && !map.getBounds().contains(focusMarker.getLatLng())) map.panTo(focusMarker.getLatLng(), { animate: false });
 }
 
@@ -162,7 +199,13 @@ function hoverAt(latlng) {
   }
   send({ type: 'hover', id: best?.id || null });
 }
-map.on('zoomend', projectRoute);
+map.on('zoomend', () => { if (!suppressViewEvents) projectRoute(); });
+map.on('moveend', () => {
+  if (suppressViewEvents) return;
+  if (projectedZoom !== map.getZoom()) projectRoute();
+  else drawArrows();
+});
+map.on('resize', () => { lastArrowBounds = null; drawArrows(); });
 map.on('mousemove', event => {
   pendingPointer = event.latlng;
   if (!pointerFrame) pointerFrame = requestAnimationFrame(() => { pointerFrame = 0; hoverAt(pendingPointer); });

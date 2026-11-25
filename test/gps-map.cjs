@@ -30,7 +30,7 @@ app.whenReady().then(async () => {
   await win.webContents.session.protocol.handle('https', request => {
     assert.equal(new URL(request.url).hostname, 'tile.openstreetmap.org');
     tileRequests++;
-    return new Response(failTiles ? '' : tile, { status: failTiles ? 503 : 200, headers: { 'Content-Type': 'image/png' } });
+    return new Response(failTiles ? '' : tile, { status: failTiles ? 503 : 200, headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' } });
   });
   const run = code => win.webContents.executeJavaScript(code);
   try {
@@ -55,6 +55,7 @@ app.whenReady().then(async () => {
     assert.equal(await frameRun('typeof window.telemetryAPI'), 'undefined');
     assert.equal(await frameRun('model.estimated'), 4);
     assert.equal(await frameRun('model.segments.length'), 2);
+    assert.ok(await frameRun('routeArrows.getLayers().length > 0'));
     assert.ok(tileRequests > 0);
     // Hover a sample omitted by downsampling: every chart and the map use its ID.
     for (const chart of ['performanceChart', 'temperatureChart', 'batteryDischargeChart']) {
@@ -72,12 +73,12 @@ app.whenReady().then(async () => {
     }
     await run("document.querySelector('#sampleSlider').value = 513; document.querySelector('#sampleSlider').dispatchEvent(new Event('input'))");
     await until(() => frameRun("document.body.dataset.focusId === '0:513'"));
-    await frameRun("map.fire('mousemove', { latlng: L.latLng(samples.get('0:120').lat, samples.get('0:120').lng) })");
+    await frameRun("map.fire('mousemove', { latlng: L.latLng(samples.get('0:120').lat, samples.get('0:120').lng) }); void 0");
     await until(() => run("focusedSampleId === '0:120'"));
     assert.deepEqual(await run("[...document.querySelectorAll('.chart-wrap')].map(chart => chart.dataset.focusId)"), ['0:120', '0:120', '0:120']);
     assert.equal(await run("document.querySelector('#assistChart .sample-active').dataset.level"), '0');
     assert.deepEqual(await frameRun("['sampleSpeed','sampleMotor','sampleRider','sampleCadence','sampleMotorTemp','sampleControllerTemp','sampleBattery','sampleVoltage','sampleDistance','sampleAssist'].map(id=>document.getElementById(id).textContent)"), ['11.2','240','80','70','38','30','98','52.5','0.24','0']);
-    await frameRun("map.fire('mouseout')");
+    await frameRun("map.fire('mouseout'); void 0");
     await until(() => frameRun("document.querySelector('#readoutStatus').textContent === 'Last inspected'"));
     assert.equal(await frameRun("document.querySelector('#sampleMotor').textContent"), '240');
     await run("document.querySelector('#assistChart [data-level=\"2\"]').dispatchEvent(new MouseEvent('mouseenter'))");
@@ -88,13 +89,25 @@ app.whenReady().then(async () => {
       assert.equal(await frameRun('map.hasLayer(focusMarker)'), kind !== 'missing');
       assert.match(await frameRun("document.querySelector('#readoutGps').textContent"), kind === 'estimated' ? /estimated/ : /unavailable/);
     }
-    // Panning, zoom and fit retain an interactive map.
+    // Panning, zoom and fit retain an interactive map and redraw zoom-scaled direction arrows.
     const zoom = await frameRun('map.getZoom()');
+    const arrowsBeforeZoom = await frameRun('routeArrows.getLayers().length');
     await frameRun("document.querySelector('.leaflet-control-zoom-in').click()");
     await until(() => frameRun(`map.getZoom() === ${zoom + 1} && !map._animatingZoom`));
+    assert.ok(await frameRun(`routeArrows.getLayers().length >= ${arrowsBeforeZoom}`));
     const center = await frameRun('map.getCenter().lng');
-    await frameRun('map.panBy([80, 0], { animate: false })');
+    await frameRun('map.panBy([80, 0], { animate: false }); void 0');
     assert.notEqual(await frameRun('map.getCenter().lng'), center);
+    // Toggling direction arrows hides and restores arrows across zoom changes.
+    await frameRun("document.querySelector('#showArrows').click()");
+    assert.equal(await frameRun("document.querySelector('#showArrows').checked"), false);
+    assert.equal(await frameRun('routeArrows.getLayers().length'), 0);
+    await frameRun("document.querySelector('.leaflet-control-zoom-out').click()");
+    await until(() => frameRun(`map.getZoom() === ${zoom} && !map._animatingZoom`));
+    assert.equal(await frameRun('routeArrows.getLayers().length'), 0);
+    await frameRun("document.querySelector('#showArrows').click()");
+    assert.equal(await frameRun("document.querySelector('#showArrows').checked"), true);
+    assert.ok(await frameRun('routeArrows.getLayers().length > 0'));
     await frameRun("document.querySelector('#fitRoute').click()");
     await frameRun("document.querySelector('#fullscreen').click()");
     await until(() => frameRun('!!document.fullscreenElement'));
@@ -105,7 +118,7 @@ app.whenReady().then(async () => {
     // Disabling background prevents further tile requests, preserves the local route.
     await frameRun("document.querySelector('#onlineTiles').click()");
     const requestsBefore = tileRequests;
-    await frameRun('map.setZoom(map.getZoom() + 1)');
+    await frameRun('map.setZoom(map.getZoom() + 1); void 0');
     await delay(300);
     assert.equal(tileRequests, requestsBefore);
     assert.equal(await frameRun('map.hasLayer(tiles)'), false);
@@ -172,11 +185,13 @@ app.whenReady().then(async () => {
     await run(`telemetrySessions = [buildSession({name:'Stationary.csv', content:'Timestamp_ISO,Timestamp_UnixMs,GPS_Latitude,GPS_Longitude\\n2026-10-01T00:00:00Z,1000,0,0\\n2026-10-01T00:00:01Z,2000,0,0'},2)]; configureFilters(); applyFilter();`);
     await until(() => frameRun('model?.total === 2 && model?.measured === 2'));
     assert.equal(await frameRun('routes.getLayers()[0] instanceof L.CircleMarker'), true);
+    assert.equal(await frameRun('routeArrows.getLayers().length'), 0);
     await run("focusSample('2:0')");
     await until(() => frameRun("document.querySelector('.sample-readout').dataset.sampleId === '2:0'"));
     assert.equal(await frameRun("document.querySelector('#sampleMotor').textContent"), '—');
     await run("document.querySelector('#filterMode').value='all'; applyFilter()");
     await until(() => frameRun('model?.sessionCount === 0 && !map.hasLayer(tiles)'));
+    assert.equal(await frameRun('routeArrows.getLayers().length'), 0);
     assert.equal(await run("document.querySelector('#routePanel').classList.contains('hidden')"), true);
     assert.deepEqual(errors, []);
     console.log('GPS UI passed: iframe, original-sample chart/map/assist focus, gaps, filters, themes, pan, zoom, fit, fullscreen and offline fallback. Tile requests used local fixtures only.');

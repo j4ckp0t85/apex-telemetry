@@ -263,5 +263,6 @@
   "EXAMPLE_TELEMETRY": "Beispieltelemetrie",
   "SHOW_EXAMPLE_TELEMETRY": "Beispieltelemetrie anzeigen",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Erkunde die enthaltene Fahrt, ohne einen Ordner auszuwählen. Die Beispieldaten bleiben von deinen Sitzungen getrennt.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Du siehst die Beispielfahrt. Sie ist von den Gesamtwerten deiner persönlichen Sitzungen ausgeschlossen."
+  "EXAMPLE_TELEMETRY_NOTICE": "Du siehst die Beispielfahrt. Sie ist von den Gesamtwerten deiner persönlichen Sitzungen ausgeschlossen.",
+  "DIRECTION_ARROWS": "Richtungspfeile"
 }

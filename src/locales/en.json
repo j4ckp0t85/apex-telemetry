@@ -242,5 +242,6 @@
   "EXAMPLE_TELEMETRY": "Example telemetry",
   "SHOW_EXAMPLE_TELEMETRY": "Show example telemetry",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Explore the included ride without choosing a folder. Example data is kept separate from your sessions.",
-  "EXAMPLE_TELEMETRY_NOTICE": "You are viewing the example ride. It is excluded from your personal session totals."
+  "EXAMPLE_TELEMETRY_NOTICE": "You are viewing the example ride. It is excluded from your personal session totals.",
+  "DIRECTION_ARROWS": "Direction arrows"
 }

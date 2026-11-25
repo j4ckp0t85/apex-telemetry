@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "Örnek telemetri",
   "SHOW_EXAMPLE_TELEMETRY": "Örnek telemetriyi göster",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Klasör seçmeden dahil edilen sürüşü inceleyin. Örnek veriler oturumlarınızdan ayrı tutulur.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Örnek sürüşü görüntülüyorsunuz. Kişisel oturumlarınızın toplamlarına dahil edilmez."
+  "EXAMPLE_TELEMETRY_NOTICE": "Örnek sürüşü görüntülüyorsunuz. Kişisel oturumlarınızın toplamlarına dahil edilmez.",
+  "DIRECTION_ARROWS": "Yön okları"
 }

@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "Dữ liệu đo từ xa mẫu",
   "SHOW_EXAMPLE_TELEMETRY": "Hiện dữ liệu đo từ xa mẫu",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Khám phá chuyến đi có sẵn mà không cần chọn thư mục. Dữ liệu mẫu được giữ riêng với các phiên của bạn.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Bạn đang xem chuyến đi mẫu. Chuyến đi này không được tính vào tổng các phiên cá nhân của bạn."
+  "EXAMPLE_TELEMETRY_NOTICE": "Bạn đang xem chuyến đi mẫu. Chuyến đi này không được tính vào tổng các phiên cá nhân của bạn.",
+  "DIRECTION_ARROWS": "Mũi tên chỉ hướng"
 }

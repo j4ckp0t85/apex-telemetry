@@ -263,5 +263,6 @@
   "EXAMPLE_TELEMETRY": "Télémétrie d’exemple",
   "SHOW_EXAMPLE_TELEMETRY": "Afficher la télémétrie d’exemple",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Explorez le trajet inclus sans choisir de dossier. Les données d’exemple restent séparées de vos sessions.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Vous consultez le trajet d’exemple. Il est exclu des totaux de vos sessions personnelles."
+  "EXAMPLE_TELEMETRY_NOTICE": "Vous consultez le trajet d’exemple. Il est exclu des totaux de vos sessions personnelles.",
+  "DIRECTION_ARROWS": "Flèches de direction"
 }

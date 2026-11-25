@@ -236,5 +236,6 @@
   "EXAMPLE_TELEMETRY": "Telemetria ya mfano",
   "SHOW_EXAMPLE_TELEMETRY": "Onyesha telemetria ya mfano",
   "EXAMPLE_TELEMETRY_DESCRIPTION": "Chunguza safari iliyojumuishwa bila kuchagua folda. Data ya mfano huwekwa kando na vipindi vyako.",
-  "EXAMPLE_TELEMETRY_NOTICE": "Unaangalia safari ya mfano. Haijumuishwi katika jumla za vipindi vyako binafsi."
+  "EXAMPLE_TELEMETRY_NOTICE": "Unaangalia safari ya mfano. Haijumuishwi katika jumla za vipindi vyako binafsi.",
+  "DIRECTION_ARROWS": "Mishale ya mwelekeo"
 }
